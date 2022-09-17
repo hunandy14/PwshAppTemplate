@@ -79,6 +79,9 @@ function Import-Param {
         [Switch] $AutoLoadCsv,
         [Switch] $TrimCsvValue
     )
+    # 開始計時
+    $Date = (Get-Date); $StWh = New-Object System.Diagnostics.Stopwatch; $StWh.Start()
+    
     # $PSBaseName = Split-Path $MyInvocation.MyCommand.Name -LeafBase
     $json = (Get-Content $Path|ConvertFrom-Json)
     $Node = $json.$NodeName
@@ -112,6 +115,17 @@ function Import-Param {
             $_.Value = ConvertTo-SecureString $Value
         }
     }
+    
+    # 停止計時
+    $StWh.Stop(); $Time = "{0:hh\:mm\:ss\.ff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds)
+    
+    # 輸出LOG
+    $LogPath = $Node.LogFile
+    $Date    = $Date.Tostring("yyyy/MM/dd HH:mm:ss.fff")
+    $Msg     = "設定檔載入完成"
+    $LogStr  = "[$Date] $Msg" + (", 耗時: $Time")
+    $LogStr  | Out-File $LogPath -Append
+    
     return $Node
 } # Import-Param 'Setting.json' -NodeName:'Param1'
 
