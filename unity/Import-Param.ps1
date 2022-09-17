@@ -111,9 +111,15 @@ function Import-Param {
             $_.Value = PathTool $Value -NewItem
         }
         # 將加密密碼轉為安全密碼物件
-        if ($Name -eq "SecurePassword") {
+        if ($Name -eq "SecurePWord") {
             $_.Value = ConvertTo-SecureString $Value
         }
+    }
+    
+    # 建立憑證
+    if ($Node.UserID -and $Node.SecurePWord) {
+        $Credential = (New-Object -TypeName Management.Automation.PSCredential -ArgumentList:$Node.UserID,$Node.SecurePWord)
+        $Node | Add-Member -MemberType:NoteProperty -Name:'Credential' -Value:$Credential
     }
     
     # 停止計時
@@ -130,6 +136,10 @@ function Import-Param {
 } # Import-Param 'Setting.json' -NodeName:'Param1'
 
 # 獲取CSV
-# $Param = (Import-Param 'Setting.json' -NodeName:'Param1' -AutoLoadCsv -TrimCsvValue); $Param.CsvObject
-# 獲取安全密碼
-# $PassWd = DecryptPassWord $Param.SecurePassword; $PassWd
+# $Param = (Import-Param 'Setting.json' -NodeName:'Param1' -AutoLoadCsv -TrimCsvValue)
+# $Param.CsvObject
+# 獲取明碼字串
+# $PassWd = DecryptPassWord $Param.SecurePWord
+# $PassWd
+# 獲取憑證
+# $Credential = $Param.Credential
