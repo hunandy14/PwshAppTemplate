@@ -5,8 +5,10 @@ if ($PSScriptRoot) { $curDir = $PSScriptRoot } else { $curDir = (Get-Location).P
 Set-Location $curDir
 
 # 獲取CSV
-$Param = (Import-Param 'Setting.json' -NodeName:'Param1' -AutoLoadCsv -TrimCsvValue); $Param.CsvObject
+$Param = (Import-Param 'Setting.json' -NodeName:'Param1' -AutoLoadCsv -TrimCsvValue);
+Write-Host "Excel內容: `n" + $Param.CsvObject
 # 獲取安全密碼
-$PassWd = DecryptPassWord $Param.SecurePassword; $PassWd
+$PassWd = DecryptPassWord $Param.SecurePassword;
+Write-Host "安全密碼: $PassWd"
 
-Exit 0
+Exit 1
