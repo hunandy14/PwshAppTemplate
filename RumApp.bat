@@ -10,6 +10,7 @@ Set Param1='Setting.json'
 Set Param2=-NodeName:'Param1'
 Set Param3=-AutoLoadCsv -TrimCsvValue
 
+CD "%~dp0"
 call %Powershell% -C "& {Set-Location '%~dp0'; Import-Module .\'%PwshLib%'; %FuncName% %Param1% %Param2% %Param3%; Exit $LastExitCode}"
 echo ExitCode: %errorlevel%
 
