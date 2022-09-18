@@ -1,39 +1,4 @@
-# 載入函式庫
-Invoke-RestMethod bit.ly/autoFixCsv|Invoke-Expression
-# Import-Module .\"Unity\autoFixCsv.ps1"
-
-# 獲取安全密碼字串
-function EncryptPassWord {
-    [CmdletBinding(DefaultParameterSetName = "A")]
-    param (
-        [Parameter(Position = 0, ParameterSetName = "A", Mandatory)]
-        [String] $String,
-        [Parameter(Position = 0, ParameterSetName = "B", Mandatory)]
-        [Object] $Object
-    )
-    if ($Object) { $secure = $Object } else {
-        $secure = (ConvertTo-SecureString $String -AsPlainText -Force)
-    }
-    return (ConvertFrom-SecureString $secure)
-} # EncryptPassWord "MyPassWord"
-
-# 從安全密碼字串獲取原密碼
-function DecryptPassWord {
-    [CmdletBinding(DefaultParameterSetName = "A")]
-    param (
-        [Parameter(Position = 0, ParameterSetName = "A", Mandatory)]
-        [String] $String,
-        [Parameter(Position = 0, ParameterSetName = "B", Mandatory)]
-        [Object] $Object
-    )
-    if ($Object) { $secure = $Object } else {
-        $secure = (ConvertTo-SecureString $String)
-    }
-    $bsr    = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-    return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bsr)
-} DecryptPassWord (EncryptPassWord "MyPassWord")
-
-# 路徑檢查並自動轉換完整路徑
+# 修復路徑工具
 function PathTool {
     [CmdletBinding(DefaultParameterSetName = "A")]
     param (
@@ -104,7 +69,7 @@ function Import-Param {
             # 自動載入CSV檔案
             if ($AutoLoadCsv) {
                 if ((Get-Item $_.Value).Extension -eq '.csv') {
-                    $Csv = autoFixCsv $_.Value -OutObject -TrimValue:$TrimCsvValue
+                    $Csv = Import-Csv $_.Value
                     $Node | Add-Member -MemberType:NoteProperty -Name:'CsvObject' -Value:$Csv
                 }
             }
@@ -136,11 +101,17 @@ function Import-Param {
     return $Node
 } # Import-Param 'Setting.json' -NodeName:'Param1'
 
+# 必要的話先修復CSV格式
+# irm bit.ly/autoFixCsv|iex; autoFixCsv -TrimValue sample1.csv
 # 獲取CSV
-# $Param = (Import-Param 'Setting.json' -NodeName:'Param1' -AutoLoadCsv -TrimCsvValue)
+# $Param = (Import-Param 'Setting.json' -NodeName:'Param1' -AutoLoadCsv)
 # $Param.CsvObject
+
 # 獲取明碼字串
-# $PassWd = DecryptPassWord $Param.SecurePWord
+# $Param  = Import-Param 'Setting.json' -NodeName:'Param1'
+# $PassWd = [Runtime.InteropServices.Marshal]::PtrToStringBSTR([Runtime.InteropServices.Marshal]::SecureStringToBSTR($Param.SecurePWord))
 # $PassWd
+
 # 獲取憑證
+# $Param  = Import-Param 'Setting.json' -NodeName:'Param1'
 # $Credential = $Param.Credential

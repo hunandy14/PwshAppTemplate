@@ -13,7 +13,7 @@ Set-Location $curDir
 $Param = (Import-Param 'Setting.json' -NodeName:'Param1' -AutoLoadCsv -TrimCsvValue);
 Write-Host "Excel內容: `n" + $Param.CsvObject
 # 獲取安全密碼
-$PassWd = DecryptPassWord $Param.SecurePWord;
+$PassWd = [Runtime.InteropServices.Marshal]::PtrToStringBSTR([Runtime.InteropServices.Marshal]::SecureStringToBSTR($Param.SecurePWord))
 Write-Host "安全密碼: $PassWd"
 Write-Host ""
 
