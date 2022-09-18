@@ -1,4 +1,5 @@
 @echo off
+CD "%~dp0"
 :: [版本5: powershell.exe (預設就有)], [版本7: pwsh.exe (額外安裝)]
 Set Powershell=pwsh.exe
 
@@ -10,7 +11,7 @@ Set Param1='Setting.json'
 Set Param2=-NodeName:'Param1'
 Set Param3=-AutoLoadCsv -TrimCsvValue
 
-CD "%~dp0"
+
 call %Powershell% -C "& {Set-Location '%~dp0'; Import-Module .\'%PwshLib%'; %FuncName% %Param1% %Param2% %Param3%; Exit $LastExitCode}"
 echo ExitCode: %errorlevel%
 
