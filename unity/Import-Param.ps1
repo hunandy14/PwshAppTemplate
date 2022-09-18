@@ -31,7 +31,7 @@ function DecryptPassWord {
     }
     $bsr    = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
     return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bsr)
-} # DecryptPassWord (EncryptPassWord "MyPassWord")
+} DecryptPassWord (EncryptPassWord "MyPassWord")
 
 # 路徑檢查並自動轉換完整路徑
 function PathTool {
@@ -87,7 +87,7 @@ function Import-Param {
     $Node = $json.$NodeName
     if ($NULL -eq $Node) { $ErrorMsg = "[$Path]:: $NodeName is NULL"; throw $ErrorMsg; }
 
-    $Node.PSObject.Properties|ForEach-Object{
+    foreach ($_ in ($Node.PSObject.Properties)) {
         $Name  = $_.Name; $Value = $_.Value
         # 檢查各項節點是否為空值，為空值時填入預設值，如預設值也沒有則報例外
         if ($Value -eq "") {
