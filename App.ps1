@@ -20,7 +20,6 @@ Write-Host ""
 
 
 $StWh.Stop(); $Time = "{0:hh\:mm\:ss\.fff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds)
-$LogStr  = "[$Date] $Msg" + (", 耗時: $Time")
 Write-Host "[$Date] 開始執行, 耗時 [" -NoNewline; Write-Host $Time -NoNewline -ForegroundColor:DarkCyan; Write-Host "] 執行結束"
 
 Exit 1
