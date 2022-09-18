@@ -123,7 +123,7 @@ function Import-Param {
     }
     
     # 停止計時
-    $StWh.Stop(); $Time = "{0:hh\:mm\:ss\.ff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds)
+    $StWh.Stop(); $Time = "{0:hh\:mm\:ss\.fff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds)
     
     # 輸出LOG
     $LogPath = $Node.LogFile
