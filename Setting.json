@@ -8,7 +8,7 @@
     "Param1":{
         "UserID": "",
         "InputFile": "input/AddItem.csv",
-        "LogFile"  : "log/AddItem.log",
+        "LogPath"  : "log/AddItem.log",
         "InputFileEncoding" : "",
         "Debug": "",
         "SecurePWord": ""

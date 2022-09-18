@@ -98,7 +98,8 @@ function Import-Param {
         }
         
         # 檢查與修正路徑為絕對路徑 (有錯PathTool會報例外)
-        if ($Name -eq "InputFile") {
+        if ($Name -match("(.*?)File$")) { # File 為輸入的檔案, 自動檢查路敬語載入CSV
+            $Name
             $_.Value = PathTool $Value
             # 自動載入CSV檔案
             if ($AutoLoadCsv) {
@@ -107,7 +108,7 @@ function Import-Param {
                     $Node | Add-Member -MemberType:NoteProperty -Name:'CsvObject' -Value:$Csv
                 }
             }
-        } if ($Name -eq "LogFile") {
+        } if ($Name -match("(.*?)Path$")) {# Path 為輸出路徑, 不存在則自動建立新檔
             $_.Value = PathTool $Value -NewItem
         }
         # 將加密密碼轉為安全密碼物件
@@ -126,7 +127,7 @@ function Import-Param {
     $StWh.Stop(); $Time = "{0:hh\:mm\:ss\.fff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds)
     
     # 輸出LOG
-    $LogPath = $Node.LogFile
+    $LogPath = $Node.LogPath
     $Date    = $Date.Tostring("yyyy/MM/dd HH:mm:ss.fff")
     $Msg     = "設定檔載入完成"
     $LogStr  = "[$Date] $Msg" + (", 耗時: $Time")
