@@ -33,9 +33,7 @@ function WriteLog {
     if ($NoDate) { $LogStr = $Msg } else {
         $LogStr = "[$((Get-Date).Tostring("yyyy/MM/dd HH:mm:ss.fff"))] $Msg"
     } $LogStr |Out-File $Path -Append
-    if (!$OutNull) {
-        Write-Host $LogStr
-    }
+    if (!$OutNull) { Write-Host $LogStr }
 } # ("Log Test")|WriteLog
 
 # 計時器
