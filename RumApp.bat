@@ -4,23 +4,38 @@ CD "%~dp0"
 Set Powershell=pwsh.exe
 
 
-:: 載入並執行函式
+echo ----------------------------------------------------------------
+:: 方法1: 載入並執行函式
 Set PwshLib=Unity\Import-Param.ps1
 Set FuncName=Import-Param
 Set Param1='Setting.json'
 Set Param2=-NodeName:'Param1'
-Set Param3=-AutoLoadCsv -TrimCsvValue
-
-
-call %Powershell% -C "& {Set-Location '%~dp0'; Import-Module .\'%PwshLib%'; %FuncName% %Param1% %Param2% %Param3%; Exit $LastExitCode}"
+Set Param3=-TrimCsvValue
+call %Powershell% -Nop -C "& {Set-Location '%~dp0'; Import-Module .\'%PwshLib%'; %FuncName% %Param1% %Param2% %Param3%; Exit $LastExitCode}"
 echo ExitCode: %errorlevel%
 
 
-:: 直接執行檔案
+echo ----------------------------------------------------------------
+:: 方法2: 直接執行檔案
 Set PwshApp=App.ps1
+call %Powershell% -Nop -C "& {Set-Location '%~dp0'; .\'%PwshApp%'; Exit $LastExitCode}"
+echo ExitCode: %errorlevel%
 
-call %Powershell% -C "& {Set-Location '%~dp0'; .\'%PwshApp%'; Exit $LastExitCode}"
+
+echo ----------------------------------------------------------------
+:: 方法3: 把Powershell寫入同一份Bat檔案
+set "0=%~f0" & set "1=%~dp0" & call %Powershell% -nop -c "iex ([io.file]::ReadAllText($env:0) -split '[:]PwshScript')[1];"
 echo ExitCode: %errorlevel%
 
 
 pause
+Exit %errorlevel%
+
+::--------------------------------------------------------------------------------------------------------------------------------
+:PwshScript
+#:: script
+Set-Location "$($env:1)"
+.\"App.ps1"
+Exit $LastExitCode
+#:: done #:PwshScript
+::--------------------------------------------------------------------------------------------------------------------------------
