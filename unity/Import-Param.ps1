@@ -1,3 +1,4 @@
+# =================================================================================================
 # 修復路徑工具
 function PathTool {
     [CmdletBinding(DefaultParameterSetName = "A")]
@@ -19,6 +20,42 @@ function PathTool {
     return $Path
 } # PathTool "Setting.json"
 
+# 輸出LOG
+function WriteLog {
+    param (
+        [String] $Path,
+        [Switch] $NoDate,
+        [Parameter(ValueFromPipeline)] $Msg
+    )
+    if (!$Path) { $Path = (Get-Item $PSCommandPath).BaseName + ".log" }
+    if (!(Test-Path $Path)) { New-Item $Path -Force | Out-Null }
+    if ($NoDate) { $LogStr = $Msg } else {
+        $LogStr = "[$((Get-Date).Tostring("yyyy/MM/dd HH:mm:ss.fff"))] $Msg"
+    } $LogStr |Out-File $Path -Append
+} # ("Log Test")|WriteLog
+
+# 計時器
+function StopWatch {
+    [CmdletBinding(DefaultParameterSetName = "A")]
+    param (
+        [Parameter(ParameterSetName = "A")]
+        [Switch] $Start,
+        [Parameter(ParameterSetName = "B")]
+        [Switch] $Stop,
+        [Parameter(ParameterSetName = "B", ValueFromPipeline)]
+        [Object] $StWh
+    )
+    if (!$StWh -or $Start) {
+        $StWh = New-Object System.Diagnostics.Stopwatch
+        $StWh.Start()
+        return $StWh
+    } else {
+        $StWh.Stop()
+        return ("{0:hh\:mm\:ss\.fff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds))
+    }
+} # $StWh=(StopWatch -Start); sleep 1; ($StWh|StopWatch -Stop);
+
+# =================================================================================================
 # 讀取Json檔案
 function Import-Json {
     param (
@@ -41,7 +78,7 @@ function Import-Param {
         [Parameter(Position = 1, ParameterSetName = "", Mandatory)]
         [string] $NodeName,
         
-        [Switch] $AutoLoadCsv,
+        [Switch] $NoLoadCsv,
         [Switch] $TrimCsvValue
     )
     # 開始計時
@@ -67,7 +104,7 @@ function Import-Param {
             $Name
             $_.Value = PathTool $Value
             # 自動載入CSV檔案
-            if ($AutoLoadCsv) {
+            if (!$NoLoadCsv) {
                 if ((Get-Item $_.Value).Extension -eq '.csv') {
                     $Csv = Import-Csv $_.Value
                     $Node | Add-Member -MemberType:NoteProperty -Name:'CsvObject' -Value:$Csv
@@ -104,7 +141,7 @@ function Import-Param {
 # 必要的話先修復CSV格式
 # irm bit.ly/autoFixCsv|iex; autoFixCsv -TrimValue sample1.csv
 # 獲取CSV
-# $Param = (Import-Param 'Setting.json' -NodeName:'Param1' -AutoLoadCsv)
+# $Param = (Import-Param 'Setting.json' -NodeName:'Param1')
 # $Param.CsvObject
 
 # 獲取明碼字串
@@ -115,3 +152,4 @@ function Import-Param {
 # 獲取憑證
 # $Param  = Import-Param 'Setting.json' -NodeName:'Param1'
 # $Credential = $Param.Credential
+# =================================================================================================
