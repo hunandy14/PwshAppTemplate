@@ -85,10 +85,7 @@ function Import-Param {
         [Switch] $NoLoadCsv,
         [Switch] $TrimCsvValue
     )
-    # 開始計時
-    $Date = (Get-Date); $StWh = New-Object System.Diagnostics.Stopwatch; $StWh.Start()
-    
-    # $PSBaseName = Split-Path $MyInvocation.MyCommand.Name -LeafBase
+    # 載入設定檔
     $json = (Get-Content $Path|ConvertFrom-Json)
     $Node = $json.$NodeName
     if ($NULL -eq $Node) { $ErrorMsg = "[$Path]:: $NodeName is NULL"; throw $ErrorMsg; }
@@ -128,17 +125,6 @@ function Import-Param {
         $Credential = (New-Object -TypeName Management.Automation.PSCredential -ArgumentList:$Node.UserID,$Node.SecurePWord)
         $Node | Add-Member -MemberType:NoteProperty -Name:'Credential' -Value:$Credential
     }
-    
-    # 停止計時
-    $StWh.Stop(); $Time = "{0:hh\:mm\:ss\.fff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds)
-    
-    # 輸出LOG
-    $LogPath = $Node.LogPath
-    $Date    = $Date.Tostring("yyyy/MM/dd HH:mm:ss.fff")
-    $Msg     = "設定檔載入完成"
-    $LogStr  = "[$Date] $Msg" + (", 耗時: $Time")
-    $LogStr  | Out-File $LogPath -Append
-    
     return $Node
 } # Import-Param 'Setting.json' -NodeName:'Param1'
 
