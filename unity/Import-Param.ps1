@@ -23,15 +23,17 @@ function PathTool {
 # 輸出LOG
 function WriteLog {
     param (
-        [String] $Path,
+        [Parameter(Position = 0, ParameterSetName = "")]
+        [String] $Path = (Get-Item $PSCommandPath).BaseName + ".log",
+        [Parameter(Position = 1, ParameterSetName = "")]
+        [String] $FormatType = "yyyy/MM/dd HH:mm:ss.fff",
         [Switch] $NoDate,
         [Switch] $OutNull,
         [Parameter(ValueFromPipeline)] $Msg
     )
-    if (!$Path) { $Path = (Get-Item $PSCommandPath).BaseName + ".log" }
     if (!(Test-Path $Path)) { New-Item $Path -Force | Out-Null }
     if ($NoDate) { $LogStr = $Msg } else {
-        $LogStr = "[$((Get-Date).Tostring("yyyy/MM/dd HH:mm:ss.fff"))] $Msg"
+        $LogStr = "[$((Get-Date).Tostring($FormatType))] $Msg"
     } $LogStr |Out-File $Path -Append
     if (!$OutNull) { Write-Host $LogStr }
 } # ("Log Test")|WriteLog
