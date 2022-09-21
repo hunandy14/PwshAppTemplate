@@ -25,6 +25,7 @@ function WriteLog {
     param (
         [String] $Path,
         [Switch] $NoDate,
+        [Switch] $OutNull,
         [Parameter(ValueFromPipeline)] $Msg
     )
     if (!$Path) { $Path = (Get-Item $PSCommandPath).BaseName + ".log" }
@@ -32,6 +33,9 @@ function WriteLog {
     if ($NoDate) { $LogStr = $Msg } else {
         $LogStr = "[$((Get-Date).Tostring("yyyy/MM/dd HH:mm:ss.fff"))] $Msg"
     } $LogStr |Out-File $Path -Append
+    if (!$OutNull) {
+        Write-Host $LogStr
+    }
 } # ("Log Test")|WriteLog
 
 # 計時器
