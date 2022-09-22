@@ -23,7 +23,7 @@ function PathTool {
 # 輸出LOG
 function WriteLog {
     param (
-        [Parameter(Position = 0, ParameterSetName = "")]
+        [Parameter(Position = 0, ParameterSetName = "", Mandatory)]
         [String] $Path = (Get-Item $PSCommandPath).BaseName + ".log",
         [Parameter(Position = 1, ParameterSetName = "")]
         [String] $FormatType = "yyyy/MM/dd HH:mm:ss.fff",
