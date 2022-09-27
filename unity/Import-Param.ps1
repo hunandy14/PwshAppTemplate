@@ -59,6 +59,7 @@ function StopWatch {
     }
 } # $StWh=(StopWatch -Start); sleep 1; ($StWh|StopWatch -Stop);
 
+# 轉換並檢查編碼名稱
 function cvEncName {
     param (
         [Parameter(Position = 0, ParameterSetName = "")]
@@ -76,6 +77,8 @@ function cvEncName {
         } return $Enc
     } return $defEnc
 } # cvEncName
+
+
 # =================================================================================================
 # 讀取Json檔案
 function Import-Json {
@@ -170,4 +173,59 @@ function Import-Param {
 # 獲取憑證
 # $Param  = Import-Param 'Setting.json' -NodeName:'Param1'
 # $Credential = $Param.Credential
+
+
+# =================================================================================================
+# 循環CSV中ITEM的數值
+function ForEachCsvItem {
+    [CmdletBinding(DefaultParameterSetName = "A")]
+    param (
+        # 循環項目的ForEach區塊
+        [Parameter(Position = 0, ParameterSetName = "A", Mandatory)]
+        [Parameter(Position = 1, ParameterSetName = "B", Mandatory)]
+        [scriptblock] $ForEachBlock,
+        # PS表格 轉換為自訂 哈希表
+        [Parameter(Position = 0, ParameterSetName = "B")]
+        [scriptblock] $ConvertObject={
+            [Object] $obj = @{}
+            foreach ($it in ($_.PSObject.Properties)) {
+                $obj += @{$it.Name = $it.Value}
+            } return $obj
+        },
+        # 輸入的物件
+        [Parameter(ParameterSetName = "", ValueFromPipeline)]
+        [Object] $_
+    ) BEGIN { } PROCESS {
+    foreach ($_ in $_) {
+        $_ = &$ConvertObject($_)
+        &$ForEachBlock($_)
+    } } END { }
+} # (Import-Param 'Setting.json' -NodeName:'Param1').CsvObject | ForEachCsvItem { $_ }
+
+# 範例: 轉換Item至Hashtable
+function __ConvertToHashTable__ {
+    # CSV 檔案
+    $CsvList = (Import-Param 'Setting.json' -NodeName:'Param1').CsvObject
+    # 轉換公式
+    $ConvertObject={
+        $obj = @{}
+        $title_idx=0
+        $field_idx=1
+        foreach ($it in ($_.PSObject.Properties)) {
+            if($Title[$title_idx]){
+                $Name = $Title[$title_idx]
+                $title_idx=$title_idx+1
+            } else {
+                $Name = "field_$($field_idx)"
+                $field_idx = $field_idx+1
+            } $obj += @{$Name = $it.Value}
+        } return $obj
+    }
+    # 轉換
+    $script:csvIdx=0; $CsvList|ForEachCsvItem -ConvertObject ([ScriptBlock]::Create({$Title=@('Title');}.ToString() + $ConvertObject)) {
+        $_
+        $script:csvIdx = $script:csvIdx+1
+    }
+} # __ConvertToHashTable__
+
 # =================================================================================================
