@@ -36,7 +36,7 @@ function WriteLog {
         $LogStr = "[$((Get-Date).Tostring($FormatType))] $Msg"
     } $LogStr |Out-File $Path -Append
     if (!$OutNull) { Write-Host $LogStr }
-} # ("Log Test")|WriteLog
+} # ("Log Test")|WriteLog 'log.log'
 
 # 計時器
 function StopWatch {
@@ -59,6 +59,23 @@ function StopWatch {
     }
 } # $StWh=(StopWatch -Start); sleep 1; ($StWh|StopWatch -Stop);
 
+function cvEncName {
+    param (
+        [Parameter(Position = 0, ParameterSetName = "")]
+        [Object] $EncodingName
+    )
+    $defEnc = [Text.Encoding]::Default
+    if ($Name) {
+        try {
+            $Enc = [Text.Encoding]::GetEncoding($EncodingName)
+        } catch { try {
+                $Enc = [Text.Encoding]::GetEncoding([int]$EncodingName)
+            } catch {
+                $ErrorMsg = "Encoding `"$EncodingName`" is not a supported encoding name."; throw $ErrorMsg
+            }
+        } return $Enc
+    } return $defEnc
+} # cvEncName
 # =================================================================================================
 # 讀取Json檔案
 function Import-Json {
@@ -86,28 +103,33 @@ function Import-Param {
         [Switch] $TrimCsvValue
     )
     # 載入設定檔
-    $json = (Get-Content $Path|ConvertFrom-Json)
+    $Enc  = [Text.Encoding]::Default
+    $json = ([IO.File]::ReadAllLines($Path, $Enc)|ConvertFrom-Json)
+
+    
+    # 開始處理設定檔數值
     $Node = $json.$NodeName
     if ($NULL -eq $Node) { $ErrorMsg = "[$Path]:: $NodeName is NULL"; throw $ErrorMsg; }
-
+    # 檢查各項節點是否為空值，為空值時填入預設值，如預設值也沒有則報例外
     foreach ($_ in ($Node.PSObject.Properties)) {
-        $Name  = $_.Name; $Value = $_.Value
-        # 檢查各項節點是否為空值，為空值時填入預設值，如預設值也沒有則報例外
+        $Name = $_.Name; $Value = $_.Value
         if ($Value -eq "") {
             $defaultValue = $json.Default.$Name
             if ($NULL -eq $defaultValue) { $ErrorMsg = "[$Path]:: $NodeName.$Name is NULL"; throw $ErrorMsg; }
             if ('' -eq $defaultValue) { $ErrorMsg = "[$Path]:: $NodeName.$Name is Empty"; throw $ErrorMsg; }
             $_.Value = $Value = $defaultValue
         }
-        
+    }
+    # 修正數值
+    foreach ($_ in ($Node.PSObject.Properties)) {
+        $Name = $_.Name; $Value = $_.Value
         # 檢查與修正路徑為絕對路徑 (有錯PathTool會報例外)
         if ($Name -match("(.*?)File$")) { # File 為輸入的檔案, 自動檢查路敬語載入CSV
-            $Name
             $_.Value = PathTool $Value
             # 自動載入CSV檔案
             if (!$NoLoadCsv) {
                 if ((Get-Item $_.Value).Extension -eq '.csv') {
-                    $Csv = Import-Csv $_.Value
+                    $Csv = [IO.File]::ReadAllLines($_.Value, (cvEncName $Node.Encoding))|ConvertFrom-Csv
                     $Node | Add-Member -MemberType:NoteProperty -Name:'CsvObject' -Value:$Csv
                 }
             }
@@ -120,6 +142,7 @@ function Import-Param {
         }
     }
     
+    
     # 建立憑證
     if ($Node.UserID -and $Node.SecurePWord) {
         $Credential = (New-Object -TypeName Management.Automation.PSCredential -ArgumentList:$Node.UserID,$Node.SecurePWord)
@@ -131,8 +154,9 @@ function Import-Param {
 # 必要的話先修復CSV格式
 # irm bit.ly/autoFixCsv|iex; autoFixCsv -TrimValue sample1.csv
 # 獲取CSV
+# $Param = $null
 # $Param = (Import-Param 'Setting.json' -NodeName:'Param1')
-# $Param.CsvObject
+# if ($Param) { $Param.CsvObject }
 
 # 獲取明碼字串
 # $Param  = Import-Param 'Setting.json' -NodeName:'Param1'
