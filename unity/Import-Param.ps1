@@ -62,7 +62,7 @@ function StopWatch {
 function cvEncName {
     param (
         [Parameter(Position = 0, ParameterSetName = "")]
-        [Object] $EncodingName
+        [String] $EncodingName
     )
     $defEnc = [Text.Encoding]::Default
     if ($Name) {
@@ -105,22 +105,26 @@ function Import-Param {
     # 載入設定檔
     $Enc  = [Text.Encoding]::Default
     $json = ([IO.File]::ReadAllLines($Path, $Enc)|ConvertFrom-Json)
-
-    
-    # 開始處理設定檔數值
     $Node = $json.$NodeName
     if ($NULL -eq $Node) { $ErrorMsg = "[$Path]:: $NodeName is NULL"; throw $ErrorMsg; }
-    # 檢查各項節點是否為空值，為空值時填入預設值，如預設值也沒有則報例外
+    
+    
+    # 修正數值1
     foreach ($_ in ($Node.PSObject.Properties)) {
         $Name = $_.Name; $Value = $_.Value
+        # 檢查各項節點是否為空值，為空值時填入預設值，如預設值也沒有則報例外
         if ($Value -eq "") {
             $defaultValue = $json.Default.$Name
             if ($NULL -eq $defaultValue) { $ErrorMsg = "[$Path]:: $NodeName.$Name is NULL"; throw $ErrorMsg; }
             if ('' -eq $defaultValue) { $ErrorMsg = "[$Path]:: $NodeName.$Name is Empty"; throw $ErrorMsg; }
             $_.Value = $Value = $defaultValue
         }
+        # 檢查編碼是否為合法名稱
+        if ($Name -match("(.*?)Encoding$")) {
+            $_.Value = (cvEncName $_.Value)
+        }
     }
-    # 修正數值
+    # 修正數值2
     foreach ($_ in ($Node.PSObject.Properties)) {
         $Name = $_.Name; $Value = $_.Value
         # 檢查與修正路徑為絕對路徑 (有錯PathTool會報例外)
@@ -129,7 +133,7 @@ function Import-Param {
             # 自動載入CSV檔案
             if (!$NoLoadCsv) {
                 if ((Get-Item $_.Value).Extension -eq '.csv') {
-                    $Csv = [IO.File]::ReadAllLines($_.Value, (cvEncName $Node.Encoding))|ConvertFrom-Csv
+                    $Csv = [IO.File]::ReadAllLines($_.Value, $Node.Encoding)|ConvertFrom-Csv
                     $Node | Add-Member -MemberType:NoteProperty -Name:'CsvObject' -Value:$Csv
                 }
             }
