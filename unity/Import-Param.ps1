@@ -28,7 +28,7 @@ function cvEncName {
     )
     $defEnc = [Text.Encoding]::Default
     # $defEnc = [Text.Encoding]::GetEncoding([int](PowerShell -C "& {return ([Text.Encoding]::Default).WindowsCodePage}"))
-    if ($Name) {
+    if ($EncodingName) {
         try {
             $Enc = [Text.Encoding]::GetEncoding($EncodingName)
         } catch { try {
@@ -36,9 +36,9 @@ function cvEncName {
             } catch {
                 $ErrorMsg = "Encoding `"$EncodingName`" is not a supported encoding name."; throw $ErrorMsg
             } 
-        } # Write-Host "Enc = $Enc"
+        } # Write-Host "Enc = $($Enc.EncodingName)"
         return $Enc
-    } # Write-Host "defEnc = $Enc"
+    } # Write-Host "defEnc = $($Enc.EncodingName)"
     return $defEnc
 } # cvEncName
 
