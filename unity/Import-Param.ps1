@@ -46,6 +46,8 @@ function StopWatch {
         [Switch] $Start,
         [Parameter(ParameterSetName = "B")]
         [Switch] $Stop,
+        [Parameter(ParameterSetName = "B")]
+        [Switch] $Lap,
         [Parameter(ParameterSetName = "B", ValueFromPipeline)]
         [Object] $StWh
     )
@@ -55,9 +57,11 @@ function StopWatch {
         return $StWh
     } else {
         $StWh.Stop()
-        return ("{0:hh\:mm\:ss\.fff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds))
+        $time = ("{0:hh\:mm\:ss\.fff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds))
+        if ($Lap) { $StWh.Start() } 
+        return $time
     }
-} # $StWh=(StopWatch -Start); sleep 1; ($StWh|StopWatch -Stop);
+} # $StWh=(StopWatch -Start); sleep 1; ($StWh|StopWatch -Lap); sleep 1; ($StWh|StopWatch -Stop);
 
 # 轉換並檢查編碼名稱
 function cvEncName {
