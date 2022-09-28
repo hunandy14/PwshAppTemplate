@@ -26,8 +26,8 @@ function cvEncName {
         [Parameter(Position = 0, ParameterSetName = "")]
         [String] $EncodingName
     )
-    # $defEnc = [Text.Encoding]::Default
-    $defEnc = [Text.Encoding]::GetEncoding([int](PowerShell -C "& {return ([Text.Encoding]::Default).WindowsCodePage}"))
+    $defEnc = [Text.Encoding]::Default
+    # $defEnc = [Text.Encoding]::GetEncoding([int](PowerShell -C "& {return ([Text.Encoding]::Default).WindowsCodePage}"))
     if ($Name) {
         try {
             $Enc = [Text.Encoding]::GetEncoding($EncodingName)
@@ -55,7 +55,8 @@ function WriteLog {
         [Switch] $OutNull,
         [Parameter(ValueFromPipeline)] $Msg
     )
-    if ($Encoding) { $Enc = cvEncName $Encoding }
+    $Enc = [Text.Encoding]::Default
+    if ($Encoding) {$Enc = (cvEncName $Encoding)}
     if (!(Test-Path $Path)) { New-Item $Path -Force | Out-Null }
     if ($NoDate) { $LogStr = $Msg } else {
         $LogStr = "[$((Get-Date).Tostring($FormatType))] $Msg"
@@ -63,7 +64,7 @@ function WriteLog {
     # $LogStr |Out-File $Path -Append
     [IO.File]::AppendAllText($Path, "$LogStr`n", $Enc)
     if (!$OutNull) { Write-Host $LogStr }
-} # ("ABCDEㄅㄆㄇㄈあいうえお")|WriteLog 'log.log' -Encoding:big5
+} # ("ABCDEㄅㄆㄇㄈあいうえお")|WriteLog 'log.log' -Encoding:950
 
 # 計時器
 function StopWatch {
