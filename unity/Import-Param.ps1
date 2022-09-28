@@ -20,23 +20,50 @@ function PathTool {
     return $Path
 } # PathTool "Setting.json"
 
+# 轉換並檢查編碼名稱
+function cvEncName {
+    param (
+        [Parameter(Position = 0, ParameterSetName = "")]
+        [String] $EncodingName
+    )
+    # $defEnc = [Text.Encoding]::Default
+    $defEnc = [Text.Encoding]::GetEncoding([int](PowerShell -C "& {return ([Text.Encoding]::Default).WindowsCodePage}"))
+    if ($Name) {
+        try {
+            $Enc = [Text.Encoding]::GetEncoding($EncodingName)
+        } catch { try {
+                $Enc = [Text.Encoding]::GetEncoding([int]$EncodingName)
+            } catch {
+                $ErrorMsg = "Encoding `"$EncodingName`" is not a supported encoding name."; throw $ErrorMsg
+            } 
+        } # Write-Host "Enc = $Enc"
+        return $Enc
+    } # Write-Host "defEnc = $Enc"
+    return $defEnc
+} # cvEncName
+
 # 輸出LOG
 function WriteLog {
     param (
-        [Parameter(Position = 0, ParameterSetName = "", Mandatory)]
-        [String] $Path = (Get-Item $PSCommandPath).BaseName + ".log",
+        [Parameter(Position = 0, ParameterSetName = "")]
+        [String] $Path = ((Get-Item $PSCommandPath).BaseName + ".log"),
         [Parameter(Position = 1, ParameterSetName = "")]
         [String] $FormatType = "yyyy/MM/dd HH:mm:ss.fff",
+        [Parameter(ParameterSetName = "")]
+        [String] $Encoding,
         [Switch] $NoDate,
         [Switch] $OutNull,
         [Parameter(ValueFromPipeline)] $Msg
     )
+    if ($Encoding) { $Enc = cvEncName $Encoding }
     if (!(Test-Path $Path)) { New-Item $Path -Force | Out-Null }
     if ($NoDate) { $LogStr = $Msg } else {
         $LogStr = "[$((Get-Date).Tostring($FormatType))] $Msg"
-    } $LogStr |Out-File $Path -Append
+    } 
+    # $LogStr |Out-File $Path -Append
+    [IO.File]::AppendAllText($Path, "$LogStr`n", $Enc)
     if (!$OutNull) { Write-Host $LogStr }
-} # ("Log Test")|WriteLog 'log.log'
+} # ("ABCDEㄅㄆㄇㄈあいうえお")|WriteLog 'log.log' -Encoding:big5
 
 # 計時器
 function StopWatch {
@@ -63,24 +90,6 @@ function StopWatch {
     }
 } # $StWh=(StopWatch -Start); sleep 1; ($StWh|StopWatch -Lap); sleep 1; ($StWh|StopWatch -Stop);
 
-# 轉換並檢查編碼名稱
-function cvEncName {
-    param (
-        [Parameter(Position = 0, ParameterSetName = "")]
-        [String] $EncodingName
-    )
-    $defEnc = [Text.Encoding]::Default
-    if ($Name) {
-        try {
-            $Enc = [Text.Encoding]::GetEncoding($EncodingName)
-        } catch { try {
-                $Enc = [Text.Encoding]::GetEncoding([int]$EncodingName)
-            } catch {
-                $ErrorMsg = "Encoding `"$EncodingName`" is not a supported encoding name."; throw $ErrorMsg
-            }
-        } return $Enc
-    } return $defEnc
-} # cvEncName
 
 
 # =================================================================================================
