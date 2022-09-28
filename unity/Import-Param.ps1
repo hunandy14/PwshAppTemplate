@@ -223,7 +223,7 @@ function __ConvertToHashTable__ {
     }
     # 轉換
     $script:csvIdx=0; $CsvList|ForEachCsvItem -ConvertObject ([ScriptBlock]::Create({$Title=@('Title');}.ToString() + $ConvertObject)) {
-        $_
+        Write-Host "[$($script:csvIdx)]: $_"
         $script:csvIdx = $script:csvIdx+1
     }
 } # __ConvertToHashTable__
