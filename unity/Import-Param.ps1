@@ -152,6 +152,8 @@ function Import-Param {
                 if ((Get-Item $_.Value).Extension -eq '.csv') {
                     $Csv = [IO.File]::ReadAllLines($_.Value, $Node.Encoding)|ConvertFrom-Csv
                     $Node | Add-Member -MemberType:NoteProperty -Name:'CsvObject' -Value:$Csv
+                    $Field = ($Csv[0].PSObject.Properties.Name)
+                    $Node | Add-Member -MemberType:NoteProperty -Name:'Field' -Value:$Field
                 }
             }
         } if ($Name -match("(.*?)Path$")) {# Path 為輸出路徑, 不存在則自動建立新檔
