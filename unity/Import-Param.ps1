@@ -67,6 +67,7 @@ function WriteLog {
 } # ("ABCDEㄅㄆㄇㄈあいうえお")|WriteLog 'log.log' -Encoding:950
 
 # 計時器
+[TimeSpan]$__StopWatch_temp__ = (New-Object System.TimeSpan)
 function StopWatch {
     [CmdletBinding(DefaultParameterSetName = "A")]
     param (
@@ -76,18 +77,31 @@ function StopWatch {
         [Switch] $Stop,
         [Parameter(ParameterSetName = "B")]
         [Switch] $Lap,
+        [Parameter(ParameterSetName = "B")]
+        [Switch] $Split,
         [Parameter(ParameterSetName = "B", ValueFromPipeline)]
         [Object] $StWh
     )
     if (!$StWh -or $Start) {
         $StWh = New-Object System.Diagnostics.Stopwatch
+        $time = [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds)
         $StWh.Start()
+        $Script:__StopWatch_temp__ = $time
         return $StWh
     } else {
         $StWh.Stop()
-        $time = ("{0:hh\:mm\:ss\.fff}" -f [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds))
-        if ($Lap) { $StWh.Start() } 
-        return $time
+        $time = [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds)
+        if ($Stop) { # 暫停計時:: 當前-該計時器暫停
+            $result = $time
+        } if ($Lap) { # 分圈計時:: 當前-該計時器初始
+            $result = $time
+            $StWh.Start()
+        } elseif ($Split) { # 分段計時:: 當前-任意計時器的上一次的操作
+            $result = $time.Add($Script:__StopWatch_temp__.Negate())
+            $StWh.Start()
+        }
+        $Script:__StopWatch_temp__ = $time
+        return ("{0:hh\:mm\:ss\.fff}" -f $result)
     }
 } # $StWh=(StopWatch -Start); sleep 1; ($StWh|StopWatch -Lap); sleep 1; ($StWh|StopWatch -Stop);
 
