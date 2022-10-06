@@ -175,7 +175,11 @@ function Import-Param {
         }
         # 將加密密碼轉為安全密碼物件
         if ($Name -eq "SecurePWord") {
-            $_.Value = ConvertTo-SecureString $Value
+            $_.Value = ConvertTo-SecureString $Value -EA:0
+            if (!$_.Value) {
+                Write-Host "[警告]:: 安全密碼物件轉換失敗, 加密明文可能有錯。" -ForegroundColor:Yellow -NoNewline
+                Write-Host "(加解密使用者不同也會報錯)"
+            }
         }
     }
     
