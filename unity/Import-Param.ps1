@@ -10,10 +10,14 @@ function PathTool {
         [Parameter(ParameterSetName = "B")]
         [switch] $IsItem
     )
+    # 轉換路徑
+    [IO.Directory]::SetCurrentDirectory(((Get-Location -PSProvider FileSystem).ProviderPath))
     $Path = [IO.Path]::GetFullPath($Path)
+    # 如果為空路徑則新增檔案
     if ($NewItem) {
         if (!(Test-Path $Path)) { New-Item $Path -Force | Out-Null }
     }
+    # 檢測是否為檔案回傳(是否)
     if ($IsItem) {
         if (Test-Path $Path -PathType:Leaf) { return $true } else { return $false }
     }
