@@ -30,6 +30,7 @@ function cvEncName {
     # $defEnc = [Text.Encoding]::GetEncoding([int](PowerShell -C "& {return ([Text.Encoding]::Default).WindowsCodePage}"))
     if ($EncodingName) {
         try {
+            if ($EncodingName -eq 'UTF8') { $EncodingName = 'UTF-8' }
             $Enc = [Text.Encoding]::GetEncoding($EncodingName)
         } catch { try {
                 $Enc = [Text.Encoding]::GetEncoding([int]$EncodingName)
