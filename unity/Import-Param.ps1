@@ -181,17 +181,18 @@ function Import-Param {
         # 將加密密碼轉為安全密碼物件
         if ($Name -eq "SecurePWord") {
             $_.Value = ConvertTo-SecureString $Value -EA:0
-            if (!$_.Value) { Write-Host "[警告]:: 安全密碼物件轉換失敗, 加密明文可能有錯。(加解密使用者不同也會報錯)" -ForegroundColor:Yellow}
+            if (!$_.Value) { Write-Host "[警告]:: 安全密碼物件轉換失敗 (加密明文有錯或加解密使用者不同)" -ForegroundColor:Yellow}
         }
     }
     
     
     # 建立憑證
     if ($Node.UserID) {
-        if (!($Node.SecurePWord)) {
-            $Node.SecurePWord = (ConvertTo-SecureString (Read-Host "如要建立憑證請手動輸入密碼: ") -AsPlainText -Force)
+        if ($Node.SecurePWord) {
+            $Credential = (New-Object -TypeName Management.Automation.PSCredential -ArgumentList:$Node.UserID,$Node.SecurePWord)
+        } else {
+            $Credential = (Get-Credential $Node.UserID)
         }
-        $Credential = (New-Object -TypeName Management.Automation.PSCredential -ArgumentList:$Node.UserID,$Node.SecurePWord)
         $Node | Add-Member -MemberType:NoteProperty -Name:'Credential' -Value:$Credential
     }
     return $Node
