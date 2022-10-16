@@ -7,6 +7,7 @@ Set Powershell=powershell.exe
 Set Execut=try{Set-ExecutionPolicy -ExecutionPolicy:Bypass -Scope:Process}catch{}
 :: 設置ps1讀取時的Encoding
 Set Encoding=[Text.Encoding]::GetEncoding('UTF-8')
+::Set Encoding=[Text.Encoding]::Default
 
 
 
@@ -49,9 +50,11 @@ Exit %errorlevel%
 ::--------------------------------------------------------------------------------------------------------------------------------
 :PwshScript
 #:: script
-Set-Location ($env:1)
+Set-Location ($env:1); [IO.Directory]::SetCurrentDirectory(((Get-Location -PSProvider FileSystem).ProviderPath))
+
 $AppFile='App.ps1'; $AppEnc='UTF-8'
 iex([Io.File]::ReadAllText((Convert-Path $AppFile), [Text.Encoding]::GetEncoding($AppEnc)))
+
 Exit $LastExitCode
 #:: done #:PwshScript
 ::--------------------------------------------------------------------------------------------------------------------------------
