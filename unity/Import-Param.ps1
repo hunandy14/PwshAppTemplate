@@ -130,14 +130,15 @@ function Import-Json {
 # 讀取設定檔
 function Import-Param {
     param (
-        [Parameter(Position = 0, ParameterSetName = "", Mandatory)]
+        [Parameter(Position = 0, ParameterSetName = "A")]
         [string] $Path,
-        [Parameter(Position = 1, ParameterSetName = "", Mandatory)]
+        [Parameter(Position = 1, ParameterSetName = "A", Mandatory)]
         [string] $NodeName,
-        
         [Switch] $NoLoadCsv,
         [Switch] $TrimCsvValue
     )
+    # 預設路徑
+    if (!$Path) { $Path = "Setting.json" }
     # 載入設定檔
     $Enc  = [Text.Encoding]::Default
     $json = ([IO.File]::ReadAllLines($Path, $Enc)|ConvertFrom-Json)
@@ -199,7 +200,11 @@ function Import-Param {
         $Node | Add-Member -MemberType:NoteProperty -Name:'Credential' -Value:$Credential
     }
     return $Node
-} # Import-Param 'Setting.json' -NodeName:'Param1'
+} 
+# Import-Param 'Setting.json' 'Param1'
+# Import-Param 'Setting.json' -NodeName:'Param1'
+# Import-Param 'Setting.json'
+# Import-Param -NodeName:'Param1'
 
 # 必要的話先修復CSV格式
 # irm bit.ly/autoFixCsv|iex; autoFixCsv -TrimValue sample1.csv
