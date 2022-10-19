@@ -189,6 +189,7 @@ function Import-Param {
                 if (!$_.Value) {
                     Write-Host "[Warning]:: Security password object conversion failed." -ForegroundColor:Yellow
                     Write-Host "(The encrypted plaintext is wrong or the users of encryption and decryption are different)"
+                    Write-Host "(Generate secure password example: `"ConvertTo-SecureString 'YourPassWrod' -AsPlainText -Force`")"
                 }
             }
         }
