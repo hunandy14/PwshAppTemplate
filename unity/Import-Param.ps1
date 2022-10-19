@@ -135,7 +135,8 @@ function Import-Param {
         [Parameter(Position = 1, ParameterSetName = "A", Mandatory)]
         [string] $NodeName,
         [Switch] $NoLoadCsv,
-        [Switch] $TrimCsvValue
+        [Switch] $TrimCsvValue,
+        [Switch] $AsPlainTextPWord
     )
     # 預設路徑
     if (!$Path) { $Path = "Setting.json" }
@@ -179,22 +180,24 @@ function Import-Param {
         } if ($Name -match("(.*?)Path$")) {# Path 為輸出路徑, 不存在則自動建立新檔
             $_.Value = PathTool $Value -NewItem
         }
-        # 將加密密碼轉為安全密碼物件
+        # 生成安全密碼物件
         if ($Name -eq "SecurePWord") {
-            $_.Value = ConvertTo-SecureString $Value -EA:0
-            if (!$_.Value) {
-                Write-Host "[Warning]:: Security password object conversion failed." -ForegroundColor:Yellow
-                Write-Host "(The encrypted plaintext is wrong or the users of encryption and decryption are different)"
+            if ($AsPlainTextPWord) { # 強制使用明碼生成
+                $_.Value = (ConvertTo-SecureString $_.Value -AsPlainText -Force)
+            } else { # 使用加密密碼生成
+                $_.Value = ConvertTo-SecureString $Value -EA:0
+                if (!$_.Value) {
+                    Write-Host "[Warning]:: Security password object conversion failed." -ForegroundColor:Yellow
+                    Write-Host "(The encrypted plaintext is wrong or the users of encryption and decryption are different)"
+                }
             }
         }
     }
-    
-    
     # 建立憑證
     if ($Node.UserID) {
         if ($Node.SecurePWord) {
             $Credential = (New-Object -TypeName Management.Automation.PSCredential -ArgumentList:$Node.UserID,$Node.SecurePWord)
-        } else {
+        } else { # 沒有密碼則由終端輸入
             $Credential = (Get-Credential $Node.UserID)
         }
         $Node | Add-Member -MemberType:NoteProperty -Name:'Credential' -Value:$Credential
@@ -205,6 +208,7 @@ function Import-Param {
 # Import-Param 'Setting.json' -NodeName:'Param1'
 # Import-Param 'Setting.json'
 # Import-Param -NodeName:'Param1'
+# Import-Param -NodeName:'Param1' -AsPlainTextPWord
 
 # 必要的話先修復CSV格式
 # irm bit.ly/autoFixCsv|iex; autoFixCsv -TrimValue sample1.csv
