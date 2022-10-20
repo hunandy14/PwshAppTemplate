@@ -1,13 +1,13 @@
 @echo off
 
-set "0=%~f0" & set "1=%~dp0" & set PwshScript=([Io.File]::ReadAllText($env:0) -split '[:]PwshScript')
+set "0=%~f0"& set "1=%~dp0"& set PwshScript=([Io.File]::ReadAllText($env:0,[Text.Encoding]::Default) -split '[:]PwshScript')
 ::powershell -nop "(%PwshScript%[2]+%PwshScript%[1])|iex; Exit $LastExitCode"
 
-set PsFile=($env:temp+'\a.ps1') & set path=%path%;C:\Program Files\PowerShell\7\pwsh.exe 
-powershell -nop -c "(%PwshScript%[2]+%PwshScript%[1])|Out-File %PsFile% utf8"
-pwsh -nop -c "(cat %PsFile% -E:utf8)|iex; Exit $LastExitCode"
+set PsFile=($env:temp+'\a.ps1')& set path=%path%;C:\Program Files\PowerShell\7\pwsh.exe 
+powershell -nop "(%PwshScript%[2]+%PwshScript%[1])|Out-File %PsFile% utf8"
+pwsh -nop -c "([Io.File]::ReadAllText(%PsFile%,[Text.Encoding]::Default))|iex; Exit $LastExitCode"
 
-echo ExitCode: %errorlevel% & pause
+echo ExitCode: %errorlevel%& pause
 Exit %errorlevel%
 
 
