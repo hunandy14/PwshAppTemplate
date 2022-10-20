@@ -2,14 +2,13 @@
 
 set "0=%~f0" & set "1=%~dp0"
 set PwshScript=([Io.File]::ReadAllText($env:0,([Text.Encoding]::Default)) -split '[:]PwshScript')
-@REM powershell -nop -c "%PwshScript%[2]|iex; %PwshScript%[1]|iex; Exit $LastExitCode"
+@REM powershell -nop -c "(%PwshScript%[2]+%PwshScript%[1])|iex; Exit $LastExitCode"
 
 set path=%path%;C:\Program Files\PowerShell\7\pwsh.exe & set PsFile=($env:temp+'\a.ps1')
 powershell -nop -c "(%PwshScript%[2]+%PwshScript%[1])|Out-File %PsFile% utf8"
 pwsh -nop -c "([Io.File]::ReadAllText(%PsFile%,([Text.Encoding]::Default)))|iex; Exit $LastExitCode"
 
-echo ExitCode: %errorlevel%
-pause
+echo ExitCode: %errorlevel% & pause
 Exit %errorlevel%
 
 
@@ -18,7 +17,7 @@ Exit %errorlevel%
 
 :PwshScript#:: script2
 #:: --------------------------------------------------------------------------------------------------------------------------------
-Write-Host "£t£u£v£w£x by PSVersion::" $PSVersionTable.PSVersion "`n"
+Write-Host "by PSVersion::" $PSVersionTable.PSVersion "`n"
 $AppFile='App.ps1'; $AppEnc='UTF-8'
 iex([Io.File]::ReadAllText($AppFile, [Text.Encoding]::GetEncoding($AppEnc)))
 
