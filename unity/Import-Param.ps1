@@ -189,7 +189,8 @@ function Import-Param {
                 if (!$_.Value) {
                     Write-Host "[Warning]:: Security password object conversion failed." -ForegroundColor:Yellow
                     Write-Host "(The encrypted plaintext is wrong or the users of encryption and decryption are different)"
-                    Write-Host "(Generate secure password example: `"ConvertTo-SecureString 'YourPassWrod' -AsPlainText -Force`")"
+                    Write-Host "  Generate secure password example -> " -NoNewline
+                    Write-Host "ConvertFrom-SecureString(ConvertTo-SecureString -A -F `"PassWD`")" -ForegroundColor:DarkCyan
                 }
             }
         }
@@ -205,7 +206,7 @@ function Import-Param {
     }
     return $Node
 } 
-# Import-Param 'Setting.json' 'Param1'
+Import-Param 'Setting.json' 'Param1'
 # Import-Param 'Setting.json' -NodeName:'Param1'
 # Import-Param 'Setting.json'
 # Import-Param -NodeName:'Param1'
