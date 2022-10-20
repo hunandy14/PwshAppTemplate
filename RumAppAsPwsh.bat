@@ -2,12 +2,11 @@
 
 set "0=%~f0" & set "1=%~dp0" & set batEnc=[Text.Encoding]::Default
 set PwshScript=([Io.File]::ReadAllText($env:0,(%batEnc%)) -split '[:]PwshScript')
-@REM powershell -nop "(%PwshScript%[2]+%PwshScript%[1])|iex; Exit $LastExitCode"
+::powershell -nop "(%PwshScript%[2]+%PwshScript%[1])|iex; Exit $LastExitCode"
 
-set path=%path%;C:\Program Files\PowerShell\7\pwsh.exe & set PsFile=($env:temp+'\a.ps1') & set PwshEnc='UTF-8'
-@REM powershell -nop -c "(%PwshScript%[2]+%PwshScript%[1])|Out-File %PsFile% utf8"
-powershell -nop "[IO.File]::WriteAllText(%PsFile%,(%PwshScript%[2]+%PwshScript%[1]),([Text.Encoding]::GetEncoding(%PwshEnc%)))"
-pwsh -nop -c "([Io.File]::ReadAllText(%PsFile%,([Text.Encoding]::GetEncoding(%PwshEnc%))))|iex; Exit $LastExitCode"
+set path=%path%;C:\Program Files\PowerShell\7\pwsh.exe & set PsFile=($env:temp+'\a.ps1')
+powershell -nop -c "(%PwshScript%[2]+%PwshScript%[1])|Out-File %PsFile% utf8"
+pwsh -nop -c "(cat %PsFile% -E:utf8)|iex; Exit $LastExitCode"
 
 echo ExitCode: %errorlevel% & pause
 Exit %errorlevel%
