@@ -197,7 +197,7 @@ function Import-Param {
         }
     }
     # 建立憑證
-    if ($Node.UserID) {
+    if (($Node.UserID) -and (!$NoConvertPWord)) {
         if ($Node.SecurePWord) {
             $Credential = (New-Object -TypeName Management.Automation.PSCredential -ArgumentList:$Node.UserID,$Node.SecurePWord)
         } else { # 沒有密碼則由終端輸入
