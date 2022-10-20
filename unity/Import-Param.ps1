@@ -136,7 +136,8 @@ function Import-Param {
         [string] $NodeName,
         [Switch] $NoLoadCsv,
         [Switch] $TrimCsvValue,
-        [Switch] $AsPlainTextPWord
+        [Switch] $AsPlainTextPWord,
+        [Switch] $NoConvertPWord
     )
     # 預設路徑
     if (!$Path) { $Path = "Setting.json" }
@@ -181,7 +182,7 @@ function Import-Param {
             $_.Value = PathTool $Value -NewItem
         }
         # 生成安全密碼物件
-        if ($Name -eq "SecurePWord") {
+        if (($Name -eq "SecurePWord") -and (!$NoConvertPWord)) {
             if ($AsPlainTextPWord) { # 強制使用明碼生成
                 $_.Value = (ConvertTo-SecureString $_.Value -AsPlainText -Force)
             } else { # 使用加密密碼生成
