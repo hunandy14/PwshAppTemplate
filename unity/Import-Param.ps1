@@ -113,27 +113,15 @@ function StopWatch {
 
 
 # =================================================================================================
-# 讀取Json檔案
-function Import-Json {
-    param (
-        [Parameter(Position = 0, ParameterSetName = "", Mandatory)]
-        [string] $Path,
-        [Parameter(Position = 1, ParameterSetName = "")]
-        [string] $Node
-    )
-    # $PSBaseName = split-path $MyInvocation.MyCommand.Name -LeafBase
-    $json = (Get-Content $Path|ConvertFrom-Json)
-    if ($Node) { $json = $json.$Node }
-    return $json
-} # Import-Json 'Setting.json' -Node:'CreateGroup'
-
 # 讀取設定檔
 function Import-Param {
     param (
-        [Parameter(Position = 0, ParameterSetName = "A")]
+        [Parameter(Position = 0, ParameterSetName = "")]
         [string] $Path,
-        [Parameter(Position = 1, ParameterSetName = "A", Mandatory)]
+        [Parameter(Position = 1, ParameterSetName = "", Mandatory)]
         [string] $NodeName,
+        [Parameter(ParameterSetName = "")]
+        [string] $Encoding,
         [Switch] $NoLoadCsv,
         [Switch] $TrimCsvValue,
         [Switch] $AsPlainTextPWord,
@@ -141,8 +129,10 @@ function Import-Param {
     )
     # 預設路徑
     if (!$Path) { $Path = "Setting.json" }
+    
     # 載入設定檔
-    $Enc  = [Text.Encoding]::Default
+    $Enc = [Text.Encoding]::Default
+    if ($Encoding) {$Enc = (cvEncName $Encoding)}
     $json = ([IO.File]::ReadAllLines($Path, $Enc)|ConvertFrom-Json)
     $Node = $json.$NodeName
     if ($NULL -eq $Node) { $ErrorMsg = "[$Path]:: $NodeName is NULL"; throw $ErrorMsg; }
@@ -207,7 +197,7 @@ function Import-Param {
     }
     return $Node
 } 
-Import-Param 'Setting.json' 'Param1'
+# Import-Param 'Setting.json' 'Param1'
 # Import-Param 'Setting.json' -NodeName:'Param1'
 # Import-Param 'Setting.json'
 # Import-Param -NodeName:'Param1'
