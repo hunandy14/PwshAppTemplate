@@ -4,7 +4,7 @@ function PathTool {
     [CmdletBinding(DefaultParameterSetName = "A")]
     param (
         [Parameter(Position = 0, ParameterSetName = "", Mandatory)]
-        [string] $Path,
+        [String] $Path,
         [Parameter(ParameterSetName = "A")]
         [switch] $NewItem,
         [Parameter(ParameterSetName = "B")]
@@ -24,28 +24,8 @@ function PathTool {
     return $Path
 } # PathTool "Setting.json"
 
-# 轉換並檢查編碼名稱
-function cvEncName {
-    param (
-        [Parameter(Position = 0, ParameterSetName = "")]
-        [String] $EncodingName
-    )
-    $defEnc = [Text.Encoding]::Default
-    # $defEnc = [Text.Encoding]::GetEncoding([int](PowerShell -C "& {return ([Text.Encoding]::Default).WindowsCodePage}"))
-    if ($EncodingName) {
-        try {
-            if ($EncodingName -eq 'UTF8') { $EncodingName = 'UTF-8' }
-            $Enc = [Text.Encoding]::GetEncoding($EncodingName)
-        } catch { try {
-                $Enc = [Text.Encoding]::GetEncoding([int]$EncodingName)
-            } catch {
-                $ErrorMsg = "Encoding `"$EncodingName`" is not a supported encoding name."; throw $ErrorMsg
-            } 
-        } # Write-Host "Enc = $($Enc.EncodingName)"
-        return $Enc
-    } # Write-Host "defEnc = $($Enc.EncodingName)"
-    return $defEnc
-} # cvEncName
+# 獲取編碼
+Invoke-RestMethod bit.ly/Get-Encoding|Invoke-Expression
 
 # 輸出LOG
 function WriteLog {
@@ -56,24 +36,23 @@ function WriteLog {
         [String] $FormatType = "yyyy/MM/dd HH:mm:ss.fff",
         [Parameter(ParameterSetName = "")]
         [String] $Encoding,
+        [Switch] $SystemEncoding,
         [Switch] $NoDate,
         [Switch] $OutNull,
         [Parameter(ValueFromPipeline)] $Msg
     )
-    $Enc = [Text.Encoding]::Default
-    if ($Encoding) {$Enc = (cvEncName $Encoding)}
+    # 建立檔案
     if (!(Test-Path $Path)) { New-Item $Path -Force | Out-Null }
+    # 輸出格式
     if ($NoDate) { $LogStr = $Msg } else {
         $LogStr = "[$((Get-Date).Tostring($FormatType))] $Msg"
-    } 
-    # $LogStr |Out-File $Path -Append
-    [IO.File]::AppendAllText($Path, "$LogStr`n", $Enc)
+    }
+    # 輸出檔案
+    [IO.File]::AppendAllText($Path, "$LogStr`n", (Get-Encoding $Encoding -SystemEncoding:$SystemEncoding))
     if (!$OutNull) { Write-Host $LogStr }
 } # ("ABCDEㄅㄆㄇㄈあいうえお")|WriteLog 'log.log' -Encoding:950
 
-
 # 計時器
-# [TimeSpan]$__StopWatch_temp__ = (New-Object System.TimeSpan)
 function StopWatch {
     [CmdletBinding(DefaultParameterSetName = "C")]
     param (
@@ -132,26 +111,24 @@ function StopWatch {
 function Import-Param {
     param (
         [Parameter(Position = 0, ParameterSetName = "")]
-        [string] $Path,
+        [String] $Path = "Setting.json",
         [Parameter(Position = 1, ParameterSetName = "", Mandatory)]
-        [string] $NodeName,
+        [String] $NodeName,
+        # 編碼選項
         [Parameter(ParameterSetName = "")]
-        [string] $Encoding,
+        [String] $Encoding,
+        [Switch] $SystemEncoding,
+        # CSF檔案選項
         [Switch] $NoLoadCsv,
         [Switch] $TrimCsvValue,
+        # 密碼選項
         [Switch] $AsPlainTextPWord,
         [Switch] $NoConvertPWord
     )
-    # 預設路徑
-    if (!$Path) { $Path = "Setting.json" }
-    
     # 載入設定檔
-    $Enc = [Text.Encoding]::Default
-    if ($Encoding) {$Enc = (cvEncName $Encoding)}
-    $json = ([IO.File]::ReadAllLines($Path, $Enc)|ConvertFrom-Json)
+    $json = ([IO.File]::ReadAllLines($Path, (Get-Encoding $Encoding -SystemEncoding:$SystemEncoding))|ConvertFrom-Json)
     $Node = $json.$NodeName
     if ($NULL -eq $Node) { $ErrorMsg = "[$Path]:: $NodeName is NULL"; throw $ErrorMsg; }
-    
     
     # 修正數值1
     foreach ($_ in ($Node.PSObject.Properties)) {
@@ -163,9 +140,9 @@ function Import-Param {
             if ('' -eq $defaultValue) { $ErrorMsg = "[$Path]:: $NodeName.$Name is Empty"; throw $ErrorMsg; }
             $_.Value = $Value = $defaultValue
         }
-        # 檢查編碼是否為合法名稱
+        # 獲取Pwsh編碼物件
         if ($Name -match("(.*?)Encoding$")) {
-            $_.Value = (cvEncName $_.Value)
+            $_.Value = (Get-Encoding $_.Value)
         }
     }
     # 修正數值2
@@ -201,6 +178,7 @@ function Import-Param {
             }
         }
     }
+    
     # 建立憑證
     if (($Node.UserID) -and (!$NoConvertPWord)) {
         if ($Node.SecurePWord) {
