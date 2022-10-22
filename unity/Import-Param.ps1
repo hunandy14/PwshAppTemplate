@@ -73,6 +73,7 @@ function WriteLog {
 
 
 # 計時器
+# [TimeSpan]$__StopWatch_temp__ = (New-Object System.TimeSpan)
 function StopWatch {
     [CmdletBinding(DefaultParameterSetName = "C")]
     param (
@@ -109,25 +110,21 @@ function StopWatch {
         } elseif ($Split) { # 分段計時:: 當前-任意計時器的上一次的操作
             $result = $time.Add($Script:__StopWatch_temp__.Negate())
             $StWh.Start()
-        }
-        $Script:__StopWatch_temp__ = $time
+        } $Script:__StopWatch_temp__ = $time
         return ($FormatType -f $result)
     # 測試區塊內的時間
     } elseif ($ScriptBlock) {
         $StWh = New-Object System.Diagnostics.Stopwatch; $StWh.Start()
-        & $ScriptBlock
+        if ($ScriptBlock.ToString().Trim() -ne '') { & $ScriptBlock }
         $StWh.Stop(); $time = [timespan]::FromMilliseconds($StWh.ElapsedMilliseconds)
         return ($FormatType -f $time)
-    } else {
-        Write-Host "D"
-        return $Null
-    }
+    } else { return $Null }
 } 
 # $StWh=(StopWatch -Start);
 # sleep 1; ($StWh|StopWatch -Split);
 # sleep 1; ($StWh|StopWatch -Lap);
 # sleep 1; ($StWh|StopWatch -Stop);
-# StopWatch { sleep 1 }
+# StopWatch {sleep 1}
 
 
 # =================================================================================================
