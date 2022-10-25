@@ -77,7 +77,21 @@ function Import-Param {
         [Switch] $NoConvertPWord
     )
     # 載入設定檔
-    $json = ([IO.File]::ReadAllLines($Path, (Get-Encoding $Encoding -SystemEncoding:$SystemEncoding))|ConvertFrom-Json)
+    $sysEnc=$SystemEncoding; $Enc1 = (Get-Encoding $Encoding -SystemEncoding:$sysEnc)
+    try{ $json = ([IO.File]::ReadAllLines($Path, $Enc1)|ConvertFrom-Json) } catch {
+        $sysEnc=!$SystemEncoding; $Enc1 = (Get-Encoding $Encoding -SystemEncoding:$sysEnc)
+        try{ $json = ([IO.File]::ReadAllLines($Path, $Enc1)|ConvertFrom-Json) } catch {
+            Write-Error ($Error[$Error.Count-1]); return
+        }
+    }
+    $Enc2 = (Get-Encoding $json.ThisJsonEncoding -SystemEncoding:$sysEnc)
+    if ($Enc2 -ne $Enc1) {
+        $Enc1 = $Enc2
+        try{ $json = ([IO.File]::ReadAllLines($Path, $Enc1)|ConvertFrom-Json) } catch {
+            Write-Error ($Error[$Error.Count-1]); return
+        }
+    }
+    
     $Node = $json.$NodeName
     if ($NULL -eq $Node) { $ErrorMsg = "[$Path]:: $NodeName is NULL"; throw $ErrorMsg; }
     
