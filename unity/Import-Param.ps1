@@ -74,6 +74,7 @@ function Import-Param {
         [Switch] $TrimCsvValue,
         # 密碼選項
         [Switch] $AsPlainTextPWord,
+        [Switch] $ForceConvertPWord,
         [Switch] $NoConvertPWord
     )
     # 載入設定檔
@@ -135,12 +136,16 @@ function Import-Param {
             if ($AsPlainTextPWord) { # 強制使用明碼生成
                 $_.Value = (ConvertTo-SecureString $_.Value -AsPlainText -Force)
             } else { # 使用加密密碼生成
-                $_.Value = ConvertTo-SecureString $Value -EA:0
+                $_.Value = ConvertTo-SecureString $_.Value -EA:0
                 if (!$_.Value) {
-                    Write-Host "[Warning]:: Security password object conversion failed." -ForegroundColor:Yellow
-                    Write-Host "(The encrypted plaintext is wrong or the users of encryption and decryption are different)"
-                    Write-Host "  Generate secure password example -> " -NoNewline
-                    Write-Host "ConvertFrom-SecureString(ConvertTo-SecureString -A -F `"PassWD`")" -ForegroundColor:DarkCyan
+                    if ($ForceConvertPWord) { # 強制轉換(失敗時用空白密碼轉換)
+                        $_.Value = (ConvertTo-SecureString " " -AsPlainText -Force)
+                    } else {
+                        Write-Host "[Warning]:: Security password object conversion failed." -ForegroundColor:Yellow
+                        Write-Host "(The encrypted plaintext is wrong or the users of encryption and decryption are different)"
+                        Write-Host "  Generate secure password example -> " -NoNewline
+                        Write-Host "ConvertFrom-SecureString(ConvertTo-SecureString -A -F `"PassWD`")" -ForegroundColor:DarkCyan
+                    }
                 }
             }
         }
@@ -160,7 +165,8 @@ function Import-Param {
 # Import-Param 'Setting.json' 'Param1'
 # Import-Param 'Setting.json' -NodeName:'Param1'
 # Import-Param 'Setting.json'
-# Import-Param -NodeName:'Param1'
+# Import-Param -NodeName:'Param1' -ForceConvertPWord
+# Import-Param -NodeName:'Param1' -NoConvertPWord
 # Import-Param -NodeName:'Param1' -AsPlainTextPWord
 
 # 必要的話先修復CSV格式
