@@ -1,8 +1,8 @@
 # =================================================================================================
 # 獲取編碼
-Invoke-RestMethod bit.ly/Get-Encoding|Invoke-Expression
+Invoke-RestMethod "raw.githubusercontent.com/hunandy14/Get-Encoding/master/Get-Encoding.ps1"|Invoke-Expression
 # 計時器
-Invoke-RestMethod bit.ly/chg_StopWatch|Invoke-Expression
+Invoke-RestMethod "raw.githubusercontent.com/hunandy14/StopWatch/master/StopWatch.ps1"|Invoke-Expression
 
 
 # =================================================================================================
