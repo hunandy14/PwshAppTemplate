@@ -92,6 +92,8 @@ function Import-Param {
         }
     }
     
+    # 獲取節點
+    # $json = ([IO.File]::ReadAllLines($Path, (Get-Encoding $Encoding -SystemEncoding:$SystemEncoding))|ConvertFrom-Json)
     $Node = $json.$NodeName
     if ($NULL -eq $Node) { $ErrorMsg = "[$Path]:: $NodeName is NULL"; throw $ErrorMsg; }
     
