@@ -15,7 +15,7 @@ powershell -nop "(%PwshScript%[2])|iex; Exit $LastExitCode"
 @REM powershell -nop "(%PwshScript%[2])|Out-File %PsFile% utf8"
 @REM pwsh -nop -c "([Io.File]::ReadAllText(%PsFile%,[Text.Encoding]::Default))|iex; Exit $LastExitCode"
 
-@REM echo ExitCode: %errorlevel%& pause
+echo ExitCode: %errorlevel%& pause
 Exit %errorlevel%
 
 
@@ -32,6 +32,7 @@ iex([Io.File]::ReadAllText($AppFile, [Text.Encoding]::GetEncoding($AppEnc)))
 :PwshScript#:: script2
 #:: --------------------------------------------------------------------------------------------------------------------------------
 try {
+    Set-ExecutionPolicy Bypass Process -Force
     Set-Location ($env:1); [IO.Directory]::SetCurrentDirectory(((Get-Location -PSProvider FileSystem).ProviderPath)); $Arguments = $env:2
     ([Io.File]::ReadAllText($env:0,[Text.Encoding]::GetEncoding('UTF-8')) -split '[:]PwshScript')[1]|iex
 } catch {
