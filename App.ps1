@@ -18,10 +18,13 @@ if ($Param.SecurePWord) {
     Write-Host ""
 }
 
+# 來自BAT的參數
+if($Arguments){ Write-Host $Arguments }
+
 # 輸出LOG
 $Msg    = "設定檔載入完成"
 $Time   = ($StWh|StopWatch -Stop)
 $LogStr = $Msg + ", 耗時:$Time."
-$LogStr |WriteLog $Param.LogPath
+$LogStr |WriteLog $Param.LogPath -UTF8BOM
     
-Exit 1
+Exit 119
