@@ -243,11 +243,11 @@ function ForEachCsvItem {
         },
         # 輸入的物件
         [Parameter(ParameterSetName = "", ValueFromPipeline)]
-        [Object] $_
+        [Object] $InputObject
     ) BEGIN { } PROCESS {
-    foreach ($_ in $_) {
-        $_ = &$ConvertObject($_)
-        &$ForEachBlock($_)
+    foreach ($Item in $InputObject) {
+        $obj = &$ConvertObject($Item)
+        &$ForEachBlock($obj)
     } } END { }
 } # (Import-Param 'Setting.json' -NodeName:'Param1').CsvObject | ForEachCsvItem { $_ }
 
