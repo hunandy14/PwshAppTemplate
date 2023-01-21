@@ -56,18 +56,18 @@ function WriteLog {
         if ($PSCommandPath) {
             $Path = ((Get-Item $PSCommandPath).BaseName + ".log")
         } else { Write-Error "Input Path `"$Path`" is Null."; return }
-        $Path = [IO.Path]::GetFullPath([IO.Path]::Combine((Get-Location -PSProvider FileSystem).ProviderPath, $Path))
-    }
+    } $Path = [IO.Path]::GetFullPath([IO.Path]::Combine((Get-Location -PSProvider FileSystem).ProviderPath, $Path))
     
     # 處理編碼
     if (!$Encoding) {
-        if ($UTF8) { # 預選項UTF8
+        if ($UTF8) {              # 預選項1 : UTF8
             $Enc = New-Object System.Text.UTF8Encoding $False
-        } elseif ($UTF8BOM) { # 預選項UTF8BOM
+        } elseif ($UTF8BOM) {     # 預選項2 : UTF8BOM
             $Enc = New-Object System.Text.UTF8Encoding $True
-        } else { # 預設編碼系統語言
-            if (!$__SysEnc__) { $Script:__SysEnc__ = [Text.Encoding]::GetEncoding((powershell -nop "([Text.Encoding]::Default).WebName")) }
-            $Enc = $__SysEnc__
+        } else {                  # 預設編碼: 系統語言
+            if (!$__SysEnc__) {
+                $Script:__SysEnc__ = [Text.Encoding]::GetEncoding((powershell -nop "([Text.Encoding]::Default).WebName"))
+            } $Enc = $__SysEnc__
         }
     } else { $Enc = $Encoding }
     
