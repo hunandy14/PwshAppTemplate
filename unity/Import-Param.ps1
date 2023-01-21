@@ -41,8 +41,8 @@ function WriteLog {
 
         [Parameter(ParameterSetName = "")]
         [Text.Encoding] $Encoding,
-        [switch] $UTF8,
-        [switch] $UTF8BOM,
+        [Switch] $UTF8,
+        [Switch] $UTF8BOM,
         
         [Parameter(ParameterSetName = "")]
         [Switch] $NoDate,
@@ -112,9 +112,9 @@ function Import-Param {
         [Switch] $NoLoadCsv,
         [Switch] $TrimCsvValue,
         # 密碼選項
-        [Switch] $AsPlainTextPWord,
-        [Switch] $ForceConvertPWord,
-        [Switch] $NoConvertPWord
+        [Switch] $AsPlainTextPWord,    # 從明碼轉換(Json檔案裡寫的不是加密文而是明碼文時使用)
+        [Switch] $ForceConvertPWord,   # 密碼物件生成錯誤時強制使用空白密碼生成物件
+        [Switch] $NoConvertPWord       # 禁用安全密碼物件生成與認證物件生成(啟用時上面兩個選項就沒有意義了)
     )
     # 載入設定檔
     $sysEnc=$SystemEncoding; $Enc1 = (Get-Encoding $Encoding -SystemEncoding:$sysEnc)
@@ -167,18 +167,18 @@ function Import-Param {
                     $Node | Add-Member -MemberType:NoteProperty -Name:'Field' -Value:$Field
                 }
             }
-        } if ($Name -match("(.*?)Path$")) {# Path 為輸出路徑, 不存在則自動建立新檔
+        } if ($Name -match("(.*?)Path$")) { # Path 為輸出路徑, 不存在則自動建立新檔
             $_.Value = PathTool $Value -NewItem
         }
         # 生成安全密碼物件
         if (($Name -eq "SecurePWord") -and (!$NoConvertPWord)) {
-            if ($AsPlainTextPWord) { # 強制使用明碼生成
-                $_.Value = (ConvertTo-SecureString $_.Value -AsPlainText -Force)
-            } else { # 使用加密密碼生成
+            if ($AsPlainTextPWord) {          # 強制使用明碼生成
+                $_.Value = ConvertTo-SecureString $_.Value -AsPlainText -Force
+            } else {                          # 使用加密密碼生成
                 $_.Value = ConvertTo-SecureString $_.Value -EA:0
                 if (!$_.Value) {
                     if ($ForceConvertPWord) { # 強制轉換(失敗時用空白密碼轉換)
-                        $_.Value = (ConvertTo-SecureString " " -AsPlainText -Force)
+                        $_.Value = ConvertTo-SecureString " " -AsPlainText -Force
                     } else {
                         Write-Host "[Warning]:: Security password object conversion failed." -ForegroundColor:Yellow
                         Write-Host "(The encrypted plaintext is wrong or the users of encryption and decryption are different)"
@@ -196,8 +196,7 @@ function Import-Param {
             $Credential = (New-Object -TypeName Management.Automation.PSCredential -ArgumentList:$Node.UserID,$Node.SecurePWord)
         } else { # 沒有密碼則由終端輸入
             $Credential = (Get-Credential $Node.UserID)
-        }
-        $Node | Add-Member -MemberType:NoteProperty -Name:'Credential' -Value:$Credential
+        } $Node | Add-Member -MemberType:NoteProperty -Name:'Credential' -Value:$Credential
     }
     return $Node
 } # Import-Param -NodeName:'Default'
