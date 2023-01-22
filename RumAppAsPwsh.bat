@@ -1,7 +1,6 @@
 @echo off
 
-set "2=%*"
-set "0=%~f0"& set "1=%~dp0"& set PwshScript=([Io.File]::ReadAllText($env:0,[Text.Encoding]::GetEncoding('UTF-8')) -split '[:]PwshScript')
+set "0=%~f0"& set "1=%~dp0"& set "2=%*"& set PwshScript=([Io.File]::ReadAllText($env:0,[Text.Encoding]::GetEncoding('UTF-8')) -split '[:]PwshScript')
 
 :: 方法1: PowerShell 5 運行
 powershell -nop "(%PwshScript%[2])|iex; Exit $LastExitCode"
