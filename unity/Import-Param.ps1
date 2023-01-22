@@ -8,6 +8,50 @@ Invoke-RestMethod "raw.githubusercontent.com/hunandy14/WriteLog/master/WriteLog.
 
 
 # =================================================================================================
+# 環境變數設定
+function Set-Environment {
+    param(
+        [Parameter(Position = 0, ParameterSetName = "", Mandatory)]
+        [string] $Name,
+        [Parameter(Position = 1, ParameterSetName = "", Mandatory)]
+        [string] $Value,
+        [switch] $Append
+    )
+    # パスの修正
+    $Value = $Value -replace("/","\")
+    # 環境変数の設定
+    if (!$Append) {
+        $cmd = "`$env:$Name = '$Value'"
+        # Write-Host $cmd
+        Invoke-Expression $cmd
+    } else {
+        $EnvValue = (Invoke-Expression "`$env:$Name;") -replace(";+",";")
+        if ($EnvValue.IndexOf($Value) -eq -1) {
+            $EnvValue += "$Value;"
+            $cmd = "`$env:$Name = '$EnvValue'"
+            # Write-Host $cmd
+            Invoke-Expression $cmd
+        }
+    }
+} # Set-Environment Path C:\bin
+
+# 載入環境變數
+function LoadEnvVar {
+    param (
+        [Parameter(Position = 0, ParameterSetName = "", Mandatory)]
+        [Object] $EnvObject
+    )
+    # ロード
+    $AppendList = @("Path")
+    $EnvObject.PSObject.Properties |ForEach-Object{
+        $Name=$_.Name; $Value=$_.Value
+        if ($AppendList -match $Name) { $Append=$true } else { $Append=$false }
+        Set-Environment $Name $Value -Append:$Append
+    }
+} # LoadEnvVar ('{"Env": {"Path": "W:/App/instantclient_21_8", "NLS_LANG": "Japanese_Japan.JA16SJIS"}}' |ConvertFrom-Json).Env
+
+
+# =================================================================================================
 # 修復路徑工具
 function PathTool {
     [CmdletBinding(DefaultParameterSetName = "A")]
