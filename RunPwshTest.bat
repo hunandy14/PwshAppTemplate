@@ -3,7 +3,7 @@
 set "0=%~f0"& set "1=%~dp0"& set "2=%*"& set PwshScript=([Io.File]::ReadAllText($env:0,[Text.Encoding]::GetEncoding('UTF-8')) -split '[:]PwshScript')
 
 :: 方法1: PowerShell 5 運行
-powershell -nop "(%PwshScript%[3])|iex; Exit $LastExitCode"
+powershell -nop -exec Bypass -c "(%PwshScript%[3])|iex; Exit $LastExitCode"
 
 :: 方法1: PowerShell 7 運行 (有nop的條件下無法使用 UTF8 以外的編碼載入)
 @REM pwsh -nop -c "(%PwshScript%[3])|iex; Exit $LastExitCode"
@@ -35,7 +35,6 @@ Invoke-RestMethod "raw.githubusercontent.com/hunandy14/WriteLog/master/WriteLog.
 :PwshScript#:: script3 Execute
 #:: --------------------------------------------------------------------------------------------------------------------------------
 try {
-    # Set-ExecutionPolicy Bypass Process -Force
     Set-Location ($env:1); [IO.Directory]::SetCurrentDirectory(((Get-Location -PSProvider FileSystem).ProviderPath)); $Arguments = $env:2
     ([Io.File]::ReadAllText($env:0,[Text.Encoding]::GetEncoding('UTF-8')) -split '[:]PwshScript')[2]|iex
     ([Io.File]::ReadAllText($env:0,[Text.Encoding]::GetEncoding('UTF-8')) -split '[:]PwshScript')[1]|iex
