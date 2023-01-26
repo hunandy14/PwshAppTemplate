@@ -43,7 +43,7 @@ try {
     $Msg = $Error|Out-String
     $LogStr = "[$((Get-Date).Tostring('yyyy/MM/dd HH:mm:ss.fff'))] $Msg"
     Write-Host $LogStr -ForegroundColor:Red
-    $LogStr >> "log\exception.log"
+    $LogStr >> "exception.log"
     Exit 1
 }
 
