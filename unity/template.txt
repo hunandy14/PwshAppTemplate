@@ -1,0 +1,35 @@
+@echo off
+set "0=%~f0"& set "1=%~dp0"& set "2=%*"& set PwshScript=([Io.File]::ReadAllText($env:0,[Text.Encoding]::GetEncoding('UTF-8')) -split '[:]PwshScript')
+powershell -nop -exec Bypass "(%PwshScript%[3])|iex; Exit $LastExitCode"
+echo ExitCode: %errorlevel%
+Exit /b %errorlevel%
+
+:PwshScript#:: Script1 Main
+#:: --------------------------------------------------------------------------------------------------------------------------------
+${PsScript.Main}
+
+:PwshScript#:: Script2 Function
+#:: --------------------------------------------------------------------------------------------------------------------------------
+${PsScript.Include}
+
+:PwshScript#:: Script3 Execute
+#:: --------------------------------------------------------------------------------------------------------------------------------
+try {
+    Set-Location ($env:1); [IO.Directory]::SetCurrentDirectory(((Get-Location -PSProvider FileSystem).ProviderPath)); $Arguments = $env:2
+    ([Io.File]::ReadAllText($env:0,[Text.Encoding]::GetEncoding('UTF-8')) -split '[:]PwshScript')[2]|iex
+    ([Io.File]::ReadAllText($env:0,[Text.Encoding]::GetEncoding('UTF-8')) -split '[:]PwshScript')[1]|iex
+} catch {
+    $LogPath = ".\log\exception.log"
+    $Enc = New-Object System.Text.UTF8Encoding $True
+    $FormatType = "yyyy/MM/dd HH:mm:ss.fff"
+    $Msg = ($Error |Out-String)
+    $Date = "[$((Get-Date).Tostring($FormatType))]"
+    Write-Host $Date -BackgroundColor:Red
+    Write-Host " $Msg" -ForegroundColor:Red
+    if (!(Test-Path $LogPath)) { New-Item $LogPath -ItemType:File -Force |Out-Null }
+    [IO.File]::AppendAllText($LogPath, "$Date`r`n$Msg`r`n", $Enc)
+    Exit 1
+}
+
+:PwshScript#:: End
+#:: --------------------------------------------------------------------------------------------------------------------------------
