@@ -27,3 +27,22 @@ $ScriptBlock = {
 
 $Arguments
 ```
+
+
+
+<br><br><br>
+
+## 混合版代碼
+只需要加在開頭而已很神的代碼
+
+```bat
+# 最簡版本
+@(set "0=%~f0"^)#) & powershell -nop -c "iex([io.file]::ReadAllText($env:0))" & exit /b
+
+# 增加參數版本
+@(set "0=%~f0"^)#) & set "1=%*" & powershell -nop -c "iex([io.file]::ReadAllText($env:0))" & exit /b
+
+# 增加可返回參數版本
+@(set "0=%~f0"^)#) & set "1=%*" & setlocal enabledelayedexpansion & powershell -nop -c "iex([io.file]::ReadAllText($env:0));$Host.SetShouldExit($LastExitCode);Exit $LastExitCode" & exit /b !errorlevel!
+
+```
