@@ -55,7 +55,7 @@ Exit 0
 轉發高級腳本的方式
 
 ```bat
-@(set "0=%~f0"^)#) & set "1=%*" & setlocal enabledelayedexpansion & powershell -nop -c "$scr=([io.file]::ReadAllText($env:0)-split'\n',2)[1];iex('&{'+$scr+'}'+$env:1);$Host.SetShouldExit($LastExitCode);Exit($LastExitCode)" & exit /b !errorlevel!
+@(set "0=%~f0"^)#) & set "1=%*" & setlocal enabledelayedexpansion & powershell -nop -c "$scr=([io.file]::ReadAllText($env:0,[Text.Encoding]::Default)-split'\n',2)[1];iex('&{'+$scr+'}'+$env:1);$Host.SetShouldExit($LastExitCode);Exit($LastExitCode)" & exit /b !errorlevel!
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
