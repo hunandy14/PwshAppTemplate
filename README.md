@@ -52,10 +52,10 @@ Exit 0
 ```
 
 
+
 <br><br><br>
 
-
-## 混合版代碼(包含轉發參數)
+## 混合高級腳本代碼(集中單一參數轉發)
 轉發高級腳本的方式 `proxy.bat` 範例
 
 ```bat
@@ -92,3 +92,45 @@ proxy.bat -X POST https://httpbin.org/post -H "Content-Type: application/json" -
 >   
 > 對於轉譯的跳脫符號問題可以參考這篇大全  
 > https://stackoverflow.com/questions/562038/escaping-double-quotes-in-batch-script/31413730#31413730  
+
+
+
+<br><br><br>
+
+## 混合高級腳本代碼(多參數轉發)
+轉發高級腳本的方式 `proxy.bat` 範例
+
+```bat
+@(set "0=%~f0"^)#) & set "1=%*" & setlocal enabledelayedexpansion & powershell -nop -c "$scr=([io.file]::ReadAllText($env:0,[Text.Encoding]::Default)-split'\n',2)[1]; iex('&{'+$scr+'}'+($env:1)); $err=$LastExitCode;$Host.SetShouldExit($err);Exit($err)" & exit /b !errorlevel!
+[CmdletBinding()]
+param (
+    [Parameter(Position=0)]
+    [string]$Argument1,
+    [string]$Argument2,
+    [switch]$ShowInfo
+)
+Write-Host "Bat 解析的參數: $env:1"
+Write-Host "Argument1: $Argument1"
+Write-Host "Argument2: $Argument2"
+Write-Host "ShowInfo : $ShowInfo"
+
+Exit 1
+
+
+```
+
+用例
+
+```bat
+proxy.bat -Argument1 AA -Argument2 "B B" -ShowInfo
+
+```
+
+結果
+
+```
+Bat 解析的參數: -Argument1 AA -Argument2 "B B" -ShowInfo
+Argument1: AA
+Argument2: B B
+ShowInfo : True
+```
