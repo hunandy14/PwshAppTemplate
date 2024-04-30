@@ -12,12 +12,12 @@ $Arguments = @(& {return $args} $env:2)
 ```
 
 但該方法有一些小問題要處理
-1. 避免被集中到一個變數裡會被當作一個字串傳遞要用iex解套
-2. 避免被雙引號解釋，要把雙引號轉成單引號
+1. 被集中到一個變數裡導致被當作一個字串傳遞 -> 用iex解套
+2. 由iex導致的參數中雙引號內特定符號(錢號,反引號)被解釋 -> 把雙引號轉成單引號
 
 ```ps1
 $ArgumentsString = '-i input.mkv frame-%d.png -test "123 $abc"'
-$Arguments = @("&{return `$args}$($ArgumentsString -replace([char]34,[char]39))"|Invoke-Expression)
+$Arguments = @("&{return(`$args)}$($ArgumentsString-replace([char]34,[char]39))"|Invoke-Expression)
 $Arguments
 ```
 
@@ -104,7 +104,7 @@ proxy.bat -X POST https://httpbin.org/post -H "Content-Type: application/json" -
 > 獲取到的參數 %* 是被解析過的，以至於無法分辨哪個雙引號是邊界引號  
 >   
 > 其次範例中解析的參數跟實際參數要注意一下，要是有不同可能是 $a 的跳脫字元有漏  
-> 目前只有設定雙引號與錢號，暫時沒發現其他問題但總覺得可能還有漏掉的  
+> 目前只有設定雙引號錢號與反引號，暫時沒發現其他問題但總覺得可能還有漏掉的  
 >   
 > 對於轉譯的跳脫符號問題可以參考這篇大全  
 > https://stackoverflow.com/questions/562038/escaping-double-quotes-in-batch-script/31413730#31413730  
