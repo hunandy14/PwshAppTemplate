@@ -11,6 +11,16 @@ PowerShell App 程序樣板
 $Arguments = @(& {return $args} $env:2)
 ```
 
+但該方法有一些小問題要處理
+1. 避免被集中到一個變數裡會被當作一個字串傳遞要用iex解套
+2. 避免被雙引號解釋，要把雙引號轉成單引號
+
+```ps1
+$ArgumentsString = '-i input.mkv frame-%d.png -test "123 $abc"'
+$Arguments = @("&{return `$args}$($ArgumentsString -replace([char]34,[char]39))"|Invoke-Expression)
+$Arguments
+```
+
 另一個方法是偷 PowerShell 內建獲取函式的方法，直接轉線程的物件出來用
 
 ```ps1
