@@ -39,6 +39,15 @@ $ScriptBlock = {
 $Arguments
 ```
 
+最優解，既然是單一參數就從頭到尾都用iex不參與實際操作就可以避開這問題了 (版本5需要反轉譯，版本7不需要)
+
+```ps1
+$ArgumentsString = '-X POST https://httpbin.org/post -H "Content-Type: application/json" -d "{""key"": ""frame-`%d.png""}"'
+if( $PSVersionTable.PSVersion.Major -le 5 ){ $ArgumentsString = $ArgumentsString -replace'([$`"''(){}[\];#&|])','`$1' }
+"curl.exe $ArgumentsString" |iex
+
+```
+
 
 
 <br><br><br>
