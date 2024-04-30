@@ -69,15 +69,21 @@ Exit 0
 轉發高級腳本的方式 `proxy.bat` 範例
 
 ```bat
-@(set "0=%~f0"^)#) & set "1=%*" & setlocal enabledelayedexpansion & powershell -nop -c "$dq=[char]34;$a='(['+$dq+'$])';$b='`$1';$scr=([io.file]::ReadAllText($env:0,[Text.Encoding]::Default)-split'\n',2)[1]; iex('&{'+$scr+'}'+($dq+($env:1-replace($a,$b))+$dq)); $err=$LastExitCode;$Host.SetShouldExit($err);Exit($err)" & exit /b !errorlevel!
+@(set "0=%~f0"^)#) & set "1=%*" & setlocal enabledelayedexpansion & powershell -nop -c "$dq=[char]34;$a='(['+$dq+'$`])';$b='`$1';$scr=([io.file]::ReadAllText($env:0,[Text.Encoding]::Default)-split'\n',2)[1]; $parm=$env:1-replace($a,$b); iex('&{'+$scr+'}'+$dq+$parm+$dq); $err=$LastExitCode;$Host.SetShouldExit($err);Exit($err)" & exit /b !errorlevel!
 [CmdletBinding()]
 param (
     [Parameter(Position=0)]
     [string]$ArgumentsString
-) $ArgumentsList = @($ArgumentsString -split ' ')
-Write-Host "Bat  解析的參數: $env:1"
-Write-Host "Pwsh 實際的參數: $ArgumentsList"
-curl.exe $ArgumentsList
+)
+Write-Host ""
+Write-Host "在 proxy.bat 中 %* 獲取的數字串 :" -BackgroundColor DarkMagenta
+Write-Host "  $env:1" -ForegroundColor DarkCyan
+
+Write-Host ""
+Write-Host "轉發到 pwsh.exe 內部獲取的參數字串: " -BackgroundColor DarkMagenta
+Write-Host "  $ArgumentsString" -ForegroundColor DarkCyan
+
+curl.exe @($ArgumentsString -split ' ')
 Exit 1
 
 
