@@ -14,6 +14,7 @@ $Arguments = @(& {return $args} $env:2)
 但該方法有一些小問題要處理
 1. 被集中到一個變數裡導致被當作一個字串傳遞 -> 用iex解套
 2. 由iex導致的參數中雙引號內特定符號(錢號,反引號)被解釋 -> 把雙引號轉成單引號
+3. 由於雙引號轉成單引號導致參數中...再寫下去沒完沒了就這些事自己想辦法吧XD
 
 ```ps1
 $ArgumentsString = '-i input.mkv frame-%d.png -test "123 $abc"'
