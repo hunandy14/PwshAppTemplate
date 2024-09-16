@@ -3,8 +3,11 @@ PowerShell App 程序樣板
 
 注意事項：Setting.json 裡面的密碼要自己更新，那個密碼生成的時候有用到當前使用者的UID，換使用者之後檢測道不同會報錯。
 
-拆分參數可以用下面的方式
 
+<br><br><br>
+
+## 拆分參數
+### 1. 用匿名函式
 用匿名函式去讀參數，結果會被自動收集到陣列裡
 
 ```ps1
@@ -22,7 +25,10 @@ $Arguments = @("&{return(`$args)}$($ArgumentsString-replace([char]34,[char]39))"
 $Arguments
 ```
 
-另一個方法是偷 PowerShell 內建獲取函式的方法，直接轉線程的物件出來用
+<br>
+
+### 2. PowerShell 內建獲取函式的方法
+另一個方法是偷 PowerShell 內建獲取函式的方法，直接轉線程的物件出來用  
 
 ```ps1
 $Arguments = '"C:\List 1.csv" -Table CHG.CHG.CHG_M01'
@@ -39,13 +45,27 @@ $ScriptBlock = {
 $Arguments
 ```
 
-最優解，既然是單一參數就從頭到尾都用iex不參與實際操作就可以避開這問題了 (版本5需要反轉譯，版本7不需要)
+<br>
+
+### 3. 使用 iex 解析
+最優解，既然是單一參數就從頭到尾都用iex不參與實際操作就可以避開這問題了 (版本5需要反轉譯，版本7不需要)  
 
 ```ps1
 $ArgumentsString = '-X POST https://httpbin.org/post -H "Content-Type: application/json" -d "{""key"": ""frame-`%d.png""}"'
 if( $PSVersionTable.PSVersion.Major -le 5 ){ $ArgumentsString = $ArgumentsString -replace'([$`"''(){}[\];#&|])','`$1' }
 "curl.exe $ArgumentsString" |iex
 
+```
+
+<br>
+
+### 4. 使用 CMD 解析
+2024-09-16 追加這個應該是最終答案了  
+理由是對於使用者來說他們在這個環境下會預期應該是走 CMD 規則  
+雖然這會導致 PowerShell 的解析全部失效，但這是正確的  
+
+```ps1
+$argslist = @(cmd.exe /c "for %i in ($env:1) do @echo %~i")
 ```
 
 
