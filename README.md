@@ -11,8 +11,8 @@ PowerShell App 程序樣板
 看似PS代碼，但實際上卻可以被命名成cmd或ps1執行。(預設行為是UTF8請務必儲存成這個編碼)
 
 ```ps1
-@(setlocal enabledelayedexpansion& set "0=%~f0"& set "1=%*"^)#)& powershell -exec Bypass -nop -c "iex('&{'+[io.file]::ReadAllText($env:0)+'}'+$env:1)-ea(1)"& exit /b !errorlevel!
-Write-Host "by PSVersion::" $PSVersionTable.PSVersion
+@(setlocal enabledelayedexpansion& set "0=%~f0"& set "1=%*"^)#)& powershell -exec Bypass -nop -c "iex('&{#'+[io.file]::ReadAllText($env:0)+'}'+$env:1)-ea(1)"& exit /b !errorlevel!
+Write-Host "by PSVersion::" $PSVersionTable.PSVersion -ForegroundColor DarkGray
 Write-Host "Caller   : $env:0 $env:1"
 
 ```
