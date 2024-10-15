@@ -28,7 +28,7 @@ Write-Host "Caller   : $env:0 $env:1"
 PowerShell內建函式拆解
 
 ```ps1
-$argslist = @(&{return $args}$env:1)
+$argslist = Invoke-Expression "&{`$args}$env:1"
 ```
 
 
