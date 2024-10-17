@@ -8,16 +8,15 @@ PowerShell App 程序樣板
 
 ## 混合代碼
 
-看似PS代碼，但實際上卻可以被命名成cmd或ps1執行。(預設行為是UTF8請務必儲存成這個編碼)
+看似PS代碼，但實際上卻可以被命名成cmd或ps1執行
 
 ```ps1
-@(setlocal enabledelayedexpansion& set "0=%~f0"& set "1=%*"^)#)& powershell -exec Bypass -nop -c "iex('&{#'+[io.file]::ReadAllText($env:0)+'}'+$env:1)-ea(1)"& exit /b !errorlevel!
-Write-Host "by PSVersion::" $PSVersionTable.PSVersion -ForegroundColor DarkGray
-Write-Host "Caller   : $env:0 $env:1"
-
+@(set +=^)#)& powershell "iex('#'+[io.file]::ReadAllText('%~f0'))"& exit /b
+Write-Host "by PSVersion::" $PSVersionTable.PSVersion
 ```
 
-詳細說明參考[高級混合代碼](https://github.com/hunandy14/PwshAppTemplate/blob/master/doc/3.%20高級混合代碼.md)
+- 增加參數與返回值的詳細說明: [單行混合代碼](https://github.com/hunandy14/PwshAppTemplate/blob/master/doc/4.%20單行混合代碼.md)
+- 進階技巧完美轉發高級函式: [高級混合代碼](https://github.com/hunandy14/PwshAppTemplate/blob/master/doc/3.%20高級混合代碼.md)
 
 
 
