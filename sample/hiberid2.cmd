@@ -1,8 +1,6 @@
 <# ::BatchScript
 @echo off & set "0=%~f0" & set "1=%*"
-set "2=@echo off & for %%i in (!1!) do (echo %%i)"
-set "escapePSKeywords=ForEach-Object { $_ -replace '([*?[\]`()$.&;|])', '`$1' }"
-powershell -nop "iex('&{'+[io.file]::ReadAllText($env:0)+'} '+((cmd /V:ON /c $env:2)|%escapePSKeywords%))-ea(1)"
+powershell -nop "iex('&{'+[io.file]::ReadAllText($env:0)+'}'+($env:1-replace'([*?[\]`()$.&;|])','`$1'))-ea(1)"
 exit /b %errorlevel%
 ::PowerShellScript #>
 [CmdletBinding()]
